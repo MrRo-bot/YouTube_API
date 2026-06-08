@@ -183,8 +183,8 @@ const logoutUser = async (req: any, res: any) => {
     await User.findByIdAndUpdate(
       _id,
       {
-        $set: {
-          refreshToken: undefined,
+        $unset: {
+          refreshToken: 1, //instead of $set {refreshToken:undefined}
         },
       },
       {
