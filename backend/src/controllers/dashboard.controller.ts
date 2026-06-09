@@ -4,7 +4,7 @@ import { ApiError } from "../utils/apiError.js";
 import { ApiResponse } from "../utils/apiResponse.js";
 
 const getChannelStats = async (req: any, res: any) => {
-  //todo: total subs verify total videos verify total likes verify total views
+  //todo: VERIFY total subs, total videos, total likes, total views
   try {
     const stats = await User.aggregate([
       {
@@ -82,7 +82,7 @@ const getChannelStats = async (req: any, res: any) => {
 };
 
 const getChannelVideos = async (req: any, res: any) => {
-  // TODO: Get all the videos uploaded by the channel
+  // TODO: VERIFY Get all the videos uploaded by the channel
   try {
     const videos = await User.aggregate([
       {
