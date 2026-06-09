@@ -15,7 +15,7 @@ export const verifyJWT = async (req: any, _: any, next: () => void) => {
     }
 
     //decoding user data from token
-    //todo: may need to create some types for each model I've created
+    //TODO: VERIFY may need to create some types for each model I've created
     const decodedToken: any | string | jwt.JwtPayload = jwt.verify(
       token,
       config.access_token

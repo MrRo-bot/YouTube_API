@@ -9,7 +9,6 @@ const storage = multer.diskStorage({
   ) {
     cb(null, "./public/temp");
   },
-
   //creating file name with unique string at the end which is common practice
   filename: function (
     req: any,
@@ -31,4 +30,7 @@ const storage = multer.diskStorage({
   },
 });
 
-export const upload = multer({ storage });
+export const upload = multer({
+  storage,
+  limits: { fileSize: 100 * 1024 * 1024 },
+});

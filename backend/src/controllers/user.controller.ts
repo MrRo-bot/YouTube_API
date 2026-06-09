@@ -63,6 +63,10 @@ const registerUser = async (req: any, res: any) => {
     if (!avatarLocalPath) {
       throw new ApiError(400, "Please provide an Avatar image");
     }
+    const avatar = await uploadOnCloudinary(avatarLocalPath);
+    if (!avatar) {
+      throw new ApiError(400, "Please provide an Avatar image");
+    }
 
     let coverImageLocalPath = "";
     if (
@@ -70,11 +74,6 @@ const registerUser = async (req: any, res: any) => {
       req.files.coverImage.length > 0
     ) {
       coverImageLocalPath = req.files?.coverImage?.[0]?.path ?? "";
-    }
-
-    const avatar = await uploadOnCloudinary(avatarLocalPath);
-    if (!avatar) {
-      throw new ApiError(400, "Please provide an Avatar image");
     }
     const coverImage = await uploadOnCloudinary(coverImageLocalPath);
 
@@ -194,10 +193,10 @@ const logoutUser = async (req: any, res: any) => {
     );
 
     return res
-      .status(200)
+      .status(204)
       .clearCookie("accessToken", cookieOptions)
       .clearCookie("refreshToken", cookieOptions)
-      .json(new ApiResponse(200, true, "User logged out successfully", {}));
+      .json(new ApiResponse(204, true, "User logged out successfully", {}));
   } catch (error: any | { message: string }) {
     throw new ApiError(
       500,
@@ -288,8 +287,8 @@ const resetPassword = async (req: any, res: any) => {
     await user.save({ validateBeforeSave: false });
 
     return res
-      .status(200)
-      .json(new ApiResponse(200, true, "Password changed successfully", {}));
+      .status(204)
+      .json(new ApiResponse(204, true, "Password changed successfully", {}));
   } catch (error: any | { message: string }) {
     throw new ApiError(
       500,
