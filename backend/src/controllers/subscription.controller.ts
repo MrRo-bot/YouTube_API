@@ -2,15 +2,43 @@ import { User } from "../models/user.model.js";
 import { Subscription } from "../models/subscription.model.js";
 import { ApiError } from "../utils/apiError.js";
 import { ApiResponse } from "../utils/apiResponse.js";
+import { Schema, Types } from "mongoose";
 
-// todo: VERIFY toggle subscription
+//TODO: VERIFY toggle subscription
 const toggleSubscription = async (req: any, res: any) => {
   const { channelId } = req.params;
+  const { userId } = req.user?._id;
+
+  if (!channelId) throw new ApiError(400, "Provide Channel ID");
 
   try {
-    await Subscription.findByIdAndDelete({ _id: channelId });
+    //TODO: VERIFY create sub object or remove sub object
+    const existingSub = await Subscription.findOne({
+      subscriber: userId,
+      channel: channelId,
+    });
 
-    return res.status(200).json({ message: "Subscription changed" });
+    if (existingSub) {
+      await Subscription.findByIdAndDelete(existingSub._id);
+
+      return res.status(200).json(
+        new ApiResponse(200, true, "Unsubscribed successfully", {
+          isSubscribed: false,
+        })
+      );
+    } else {
+      // Subscribe
+      await Subscription.create({
+        subscriber: userId,
+        channel: channelId,
+      });
+
+      return res.status(201).json(
+        new ApiResponse(201, true, "Subscribed successfully", {
+          isSubscribed: true,
+        })
+      );
+    }
   } catch (error: any | { message: string }) {
     throw new ApiError(
       500,
@@ -19,7 +47,7 @@ const toggleSubscription = async (req: any, res: any) => {
   }
 };
 
-//todo: VERIFY controller to return subscriber list of a channel
+//TODO: VERIFY controller to return subscriber list of a channel
 const getUserChannelSubscribers = async (req: any, res: any) => {
   const { channelId } = req.params;
 
@@ -27,7 +55,7 @@ const getUserChannelSubscribers = async (req: any, res: any) => {
 
   try {
     const subscribers = await User.aggregate([
-      { $match: { _id: channelId } },
+      { $match: { _id: new Types.ObjectId(channelId) } },
       {
         $lookup: {
           from: "subscriptions",
@@ -65,7 +93,7 @@ const getUserChannelSubscribers = async (req: any, res: any) => {
   }
 };
 
-//todo: VERIFY controller to return channel list to which user has subscribed
+//TODO: VERIFY controller to return channel list to which user has subscribed
 const getSubscribedChannels = async (req: any, res: any) => {
   const { subscriberId } = req.params;
 
@@ -73,7 +101,7 @@ const getSubscribedChannels = async (req: any, res: any) => {
 
   try {
     const subscriptions = await User.aggregate([
-      { $match: { _id: subscriberId } },
+      { $match: { _id: new Types.ObjectId(subscriberId) } },
       {
         $lookup: {
           from: "subscriptions",

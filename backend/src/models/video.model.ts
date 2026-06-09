@@ -39,7 +39,7 @@ const videoSchema = new Schema(
   { timestamps: true }
 );
 
-//plugin to use mongoose aggregate pipeline method for doing multiple database operations together
+//plugin to use mongoose aggregate pipeline method for doing pagination operations in database together
 videoSchema.plugin(mongooseAggregatePaginate);
 
 export const Video = mongoose.model("Video", videoSchema);
