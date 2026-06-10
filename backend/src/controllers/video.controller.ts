@@ -10,16 +10,16 @@ import {
 
 const getAllVideos = async (req: any, res: any) => {
   //TODO: VERIFY need to check everything here
-  try {
-    const {
-      page = 1,
-      limit = 10,
-      query,
-      sortBy = "createdAt",
-      sortType = "desc",
-      userId,
-    } = req.query;
+  const {
+    page = 1,
+    limit = 10,
+    query,
+    sortBy = "createdAt",
+    sortType = "desc",
+    userId,
+  } = req.query;
 
+  try {
     if (!userId || !isValidObjectId(userId)) {
       throw new ApiError(400, "Valid userId is required");
     }

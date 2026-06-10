@@ -1,13 +1,16 @@
+import mongoose, { isValidObjectId } from "mongoose";
 import { User } from "../models/user.model.js";
 import { ApiError } from "../utils/apiError.js";
 import { ApiResponse } from "../utils/apiResponse.js";
 
 const getChannelStats = async (req: any, res: any) => {
   //TODO: VERIFY total subs, total videos, total likes, total views
+  if (isValidObjectId(req.user?._id))
+    throw new ApiError(400, "Invalid User ID");
   try {
     const stats = await User.aggregate([
       {
-        $match: { _id: req.user?._id },
+        $match: { _id: new mongoose.Types.ObjectId(req.user?._id) },
       },
       {
         $lookup: {
@@ -82,10 +85,12 @@ const getChannelStats = async (req: any, res: any) => {
 
 const getChannelVideos = async (req: any, res: any) => {
   //TODO: VERIFY Get all the videos uploaded by the channel
+  if (isValidObjectId(req.user?._id))
+    throw new ApiError(400, "Invalid User ID");
   try {
     const videos = await User.aggregate([
       {
-        $match: { _id: req.user?._id },
+        $match: { _id: new mongoose.Types.ObjectId(req.user?._id) },
       },
       {
         $lookup: {

@@ -122,6 +122,7 @@ const registerUser = async (req: any, res: any) => {
 
 const loginUser = async (req: any, res: any) => {
   const { username, email, password } = req.body;
+
   if (!(username || email)) {
     throw new ApiError(400, "Username or Email is required");
   }
@@ -222,6 +223,7 @@ const refreshAccessToken = async (req: any, res: any) => {
   if (!incomingRefreshToken) {
     throw new ApiError(401, "Unauthorized request");
   }
+
   try {
     const decodedToken: any | JwtPayload = jwt.verify(
       incomingRefreshToken,
@@ -267,6 +269,7 @@ const refreshAccessToken = async (req: any, res: any) => {
 
 const resetPassword = async (req: any, res: any) => {
   const { oldPassword, newPassword } = req?.body;
+
   if (!oldPassword || !newPassword) {
     throw new ApiError(
       401,
@@ -380,6 +383,7 @@ const updateProfileDetails = async (req: any, res: any) => {
 
 const updateAvatar = async (req: any, res: any) => {
   const avatar = req.file;
+
   if (!avatar) throw new ApiError(400, "Please provide an Avatar image");
 
   try {
@@ -445,6 +449,7 @@ const updateAvatar = async (req: any, res: any) => {
 
 const updateCover = async (req: any, res: any) => {
   const coverImage = req.file;
+
   if (!coverImage) throw new ApiError(400, "Please provide a Cover image");
 
   try {

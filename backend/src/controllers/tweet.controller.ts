@@ -6,10 +6,10 @@ import { ApiResponse } from "../utils/apiResponse.js";
 
 const createTweet = async (req: any, res: any) => {
   //TODO: VERIFY create tweet
-  try {
-    const { content } = req.body;
-    const owner = req.user?._id;
+  const { content } = req.body;
+  const owner = req.user?._id;
 
+  try {
     if (!content && !isValidObjectId(owner))
       throw new ApiError(400, "Please provide valid details");
 
