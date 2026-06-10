@@ -2,7 +2,7 @@ import { User } from "../models/user.model.js";
 import { Subscription } from "../models/subscription.model.js";
 import { ApiError } from "../utils/apiError.js";
 import { ApiResponse } from "../utils/apiResponse.js";
-import { Schema, Types } from "mongoose";
+import { isValidObjectId, Types } from "mongoose";
 
 //TODO: VERIFY toggle subscription
 const toggleSubscription = async (req: any, res: any) => {
@@ -97,7 +97,8 @@ const getUserChannelSubscribers = async (req: any, res: any) => {
 const getSubscribedChannels = async (req: any, res: any) => {
   const { subscriberId } = req.params;
 
-  if (!subscriberId) throw new ApiError(400, "Invalid subscriber ID");
+  if (!isValidObjectId(subscriberId))
+    throw new ApiError(400, "Invalid subscriber ID");
 
   try {
     const subscriptions = await User.aggregate([

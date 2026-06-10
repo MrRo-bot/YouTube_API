@@ -1,4 +1,4 @@
-import mongoose from "mongoose";
+import mongoose, { isValidObjectId } from "mongoose";
 import type { ObjectId } from "mongoose";
 import { Video } from "../models/video.model.js";
 import { ApiError } from "../utils/apiError.js";
@@ -20,7 +20,7 @@ const getAllVideos = async (req: any, res: any) => {
       userId,
     } = req.query;
 
-    if (!userId || !mongoose.Types.ObjectId.isValid(userId)) {
+    if (!userId || !isValidObjectId(userId)) {
       throw new ApiError(400, "Valid userId is required");
     }
 
