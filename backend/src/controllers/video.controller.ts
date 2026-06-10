@@ -103,9 +103,9 @@ const getAllVideos = async (req: any, res: any) => {
         filters: { query, sortBy, sortType },
       })
     );
-  } catch (error: any | { message: string }) {
+  } catch (error: any | { statusCode?: number; message?: string }) {
     throw new ApiError(
-      500,
+      error.statusCode || 500,
       error.message || "Something went wrong while getting Videos"
     );
   }
@@ -156,9 +156,9 @@ const publishAVideo = async (req: any, res: any) => {
       .json(
         new ApiResponse(201, true, "Video published successfully", newVideo)
       );
-  } catch (error: any | { message: string }) {
+  } catch (error: any | { statusCode?: number; message?: string }) {
     throw new ApiError(
-      500,
+      error.statusCode || 500,
       error.message || "Something went wrong while publishing the Video"
     );
   }
@@ -178,9 +178,9 @@ const getVideoById = async (req: any, res: any) => {
     if (!video) throw new ApiError(404, "Video not found");
 
     res.status(200).json(new ApiResponse(200, true, "Video found!", video));
-  } catch (error: any | { message: string }) {
+  } catch (error: any | { statusCode?: number; message?: string }) {
     throw new ApiError(
-      500,
+      error.statusCode || 500,
       error.message || "Something went wrong while finding the Video"
     );
   }
@@ -231,9 +231,9 @@ const updateVideo = async (req: any, res: any) => {
       .json(
         new ApiResponse(200, true, "Video updated successfully", updatedVideo)
       );
-  } catch (error: any | { message: string }) {
+  } catch (error: any | { statusCode?: number; message?: string }) {
     throw new ApiError(
-      500,
+      error.statusCode || 500,
       error.message || "Something went wrong while updating the Video data"
     );
   }
@@ -264,9 +264,9 @@ const deleteVideo = async (req: any, res: any) => {
       throw new ApiError(400, "Error while deleting Thumbnail from Cloudinary");
 
     res.status(204).json(new ApiResponse(204, true, "Video Deleted!", {}));
-  } catch (error: any | { message: string }) {
+  } catch (error: any | { statusCode?: number; message?: string }) {
     throw new ApiError(
-      500,
+      error.statusCode || 500,
       error.message || "Something went wrong while deleting the Video"
     );
   }
@@ -289,9 +289,9 @@ const togglePublishStatus = async (req: any, res: any) => {
     res
       .status(200)
       .json(new ApiResponse(200, true, "Video publish status updated!", video));
-  } catch (error: any | { message: string }) {
+  } catch (error: any | { statusCode?: number; message?: string }) {
     throw new ApiError(
-      500,
+      error.statusCode || 500,
       error.message || "Something went wrong while deleting the Video"
     );
   }

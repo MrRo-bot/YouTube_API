@@ -75,9 +75,9 @@ const getChannelStats = async (req: any, res: any) => {
           stats[0]
         )
       );
-  } catch (error: any | { message: string }) {
+  } catch (error: any | { statusCode?: number; message?: string }) {
     throw new ApiError(
-      500,
+      error.statusCode || 500,
       error.message || "Something went wrong while getting Stats"
     );
   }
@@ -128,9 +128,9 @@ const getChannelVideos = async (req: any, res: any) => {
           videos[0]
         )
       );
-  } catch (error: any | { message: string }) {
+  } catch (error: any | { statusCode?: number; message?: string }) {
     throw new ApiError(
-      500,
+      error.statusCode || 500,
       error.message || "Something went wrong while getting Videos list"
     );
   }

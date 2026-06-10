@@ -39,9 +39,9 @@ const toggleSubscription = async (req: any, res: any) => {
         })
       );
     }
-  } catch (error: any | { message: string }) {
+  } catch (error: any | { statusCode?: number; message?: string }) {
     throw new ApiError(
-      500,
+      error.statusCode || 500,
       error.message || "Something went wrong while toggling subscription"
     );
   }
@@ -85,9 +85,9 @@ const getUserChannelSubscribers = async (req: any, res: any) => {
           subscribers[0]
         )
       );
-  } catch (error: any | { message: string }) {
+  } catch (error: any | { statusCode?: number; message?: string }) {
     throw new ApiError(
-      500,
+      error.statusCode || 500,
       error.message || "Something went wrong while getting subscribers"
     );
   }
@@ -132,9 +132,9 @@ const getSubscribedChannels = async (req: any, res: any) => {
           subscriptions[0]
         )
       );
-  } catch (error: any | { message: string }) {
+  } catch (error: any | { statusCode?: number; message?: string }) {
     throw new ApiError(
-      500,
+      error.statusCode || 500,
       error.message || "Something went wrong while getting subscriptions"
     );
   }

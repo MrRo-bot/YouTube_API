@@ -34,9 +34,9 @@ const toggleVideoLike = async (req: any, res: any) => {
         })
       );
     }
-  } catch (error: any | { message: string }) {
+  } catch (error: any | { statusCode?: number; message?: string }) {
     throw new ApiError(
-      500,
+      error.statusCode || 500,
       error.message || "Something went wrong while toggling video like"
     );
   }
@@ -74,9 +74,9 @@ const toggleCommentLike = async (req: any, res: any) => {
         })
       );
     }
-  } catch (error: any | { message: string }) {
+  } catch (error: any | { statusCode?: number; message?: string }) {
     throw new ApiError(
-      500,
+      error.statusCode || 500,
       error.message || "Something went wrong while toggling comment like"
     );
   }
@@ -113,9 +113,9 @@ const toggleTweetLike = async (req: any, res: any) => {
         })
       );
     }
-  } catch (error: any | { message: string }) {
+  } catch (error: any | { statusCode?: number; message?: string }) {
     throw new ApiError(
-      500,
+      error.statusCode || 500,
       error.message || "Something went wrong while toggling tweet like"
     );
   }
@@ -170,9 +170,9 @@ const getLikedVideos = async (req: any, res: any) => {
           likedVideos
         )
       );
-  } catch (error: any | { message: string }) {
+  } catch (error: any | { statusCode?: number; message?: string }) {
     throw new ApiError(
-      500,
+      error.statusCode || 500,
       error.message || "Something went wrong while fetching Liked Videos"
     );
   }

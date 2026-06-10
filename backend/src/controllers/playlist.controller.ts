@@ -24,9 +24,9 @@ const createPlaylist = async (req: any, res: any) => {
     return res
       .status(200)
       .json(new ApiResponse(200, true, "Playlist added", newPlaylist));
-  } catch (error: any | { message: string }) {
+  } catch (error: any | { statusCode?: number; message?: string }) {
     throw new ApiError(
-      500,
+      error.statusCode || 500,
       error.message || "Something went wrong while creating the Playlist"
     );
   }
@@ -81,9 +81,9 @@ const getUserPlaylists = async (req: any, res: any) => {
           userPlaylist
         )
       );
-  } catch (error: any | { message: string }) {
+  } catch (error: any | { statusCode?: number; message?: string }) {
     throw new ApiError(
-      500,
+      error.statusCode || 500,
       error.message || "Something went wrong while fetching User Playlists"
     );
   }
@@ -104,9 +104,9 @@ const getPlaylistById = async (req: any, res: any) => {
     return res
       .status(200)
       .json(new ApiResponse(200, true, "Found the Playlist", playlist));
-  } catch (error: any | { message: string }) {
+  } catch (error: any | { statusCode?: number; message?: string }) {
     throw new ApiError(
-      500,
+      error.statusCode || 500,
       error.message || "Something went wrong while getting the Playlist"
     );
   }
@@ -136,9 +136,9 @@ const addVideoToPlaylist = async (req: any, res: any) => {
       .json(
         new ApiResponse(200, true, "Video added to Playlist", updatedPlaylist)
       );
-  } catch (error: any | { message: string }) {
+  } catch (error: any | { statusCode?: number; message?: string }) {
     throw new ApiError(
-      500,
+      error.statusCode || 500,
       error.message || "Something went wrong while adding video to the Playlist"
     );
   }
@@ -169,9 +169,9 @@ const removeVideoFromPlaylist = async (req: any, res: any) => {
       .json(
         new ApiResponse(200, true, "Video removed to Playlist", updatedPlaylist)
       );
-  } catch (error: any | { message: string }) {
+  } catch (error: any | { statusCode?: number; message?: string }) {
     throw new ApiError(
-      500,
+      error.statusCode || 500,
       error.message ||
         "Something went wrong while removing video from the Playlist"
     );
@@ -191,9 +191,9 @@ const deletePlaylist = async (req: any, res: any) => {
     return res
       .status(204)
       .json(new ApiResponse(204, true, "Deleted the Playlist", {}));
-  } catch (error: any | { message: string }) {
+  } catch (error: any | { statusCode?: number; message?: string }) {
     throw new ApiError(
-      500,
+      error.statusCode || 500,
       error.message || "Something went wrong while deleting the Playlist"
     );
   }
@@ -234,9 +234,9 @@ const updatePlaylist = async (req: any, res: any) => {
     return res
       .status(200)
       .json(new ApiResponse(200, true, "Playlist updated", updatedPlaylist));
-  } catch (error: any | { message: string }) {
+  } catch (error: any | { statusCode?: number; message?: string }) {
     throw new ApiError(
-      500,
+      error.statusCode || 500,
       error.message || "Something went wrong while updating the Playlist"
     );
   }

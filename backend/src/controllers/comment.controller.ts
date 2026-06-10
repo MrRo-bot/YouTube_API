@@ -68,9 +68,9 @@ const getVideoComments = async (req: any, res: any) => {
         },
       })
     );
-  } catch (error: any | { message: string }) {
+  } catch (error: any | { statusCode?: number; message?: string }) {
     throw new ApiError(
-      500,
+      error.statusCode || 500,
       error.message || "Something went wrong while getting Video Comments"
     );
   }
@@ -99,9 +99,9 @@ const addComment = async (req: any, res: any) => {
       .json(
         new ApiResponse(201, true, "Comment published successfully", comment)
       );
-  } catch (error: any | { message: string }) {
+  } catch (error: any | { statusCode?: number; message?: string }) {
     throw new ApiError(
-      500,
+      error.statusCode || 500,
       error.message || "Something went wrong while creating the Comment"
     );
   }
@@ -140,9 +140,9 @@ const updateComment = async (req: any, res: any) => {
           updatedComment
         )
       );
-  } catch (error: any | { message: string }) {
+  } catch (error: any | { statusCode?: number; message?: string }) {
     throw new ApiError(
-      500,
+      error.statusCode || 500,
       error.message || "Something went wrong while updating the Comment"
     );
   }
@@ -158,9 +158,9 @@ const deleteComment = async (req: any, res: any) => {
     if (!comment) throw new ApiError(404, "Comment not found");
 
     res.status(204).json(new ApiResponse(204, true, "Comment Deleted!", {}));
-  } catch (error: any | { message: string }) {
+  } catch (error: any | { statusCode?: number; message?: string }) {
     throw new ApiError(
-      500,
+      error.statusCode || 500,
       error.message || "Something went wrong while deleting the Comment"
     );
   }

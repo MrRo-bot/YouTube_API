@@ -33,9 +33,9 @@ export const verifyJWT = async (req: any, _: any, next: () => void) => {
     req.user = user;
 
     next();
-  } catch (error: any | { message: string }) {
+  } catch (error: any | { statusCode?: number; message?: string }) {
     throw new ApiError(
-      500,
+      error.statusCode || 500,
       error?.message || "Something went wrong while verifying tokens"
     );
   }

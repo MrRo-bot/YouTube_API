@@ -22,9 +22,9 @@ const generateAccessTokenAndRefreshToken = async (userId: ObjectId) => {
     await user.save({ validateBeforeSave: false });
 
     return { accessToken, refreshToken };
-  } catch (error: any | { message: string }) {
+  } catch (error: any | { statusCode?: number; message?: string }) {
     throw new ApiError(
-      500,
+      error.statusCode || 500,
       error.message || "Something went wrong while generating tokens"
     );
   }
@@ -101,9 +101,9 @@ const registerUser = async (req: any, res: any) => {
     return res
       .status(201)
       .json(new ApiResponse(201, true, "User registered successfully", user));
-  } catch (error: any | { message: string }) {
+  } catch (error: any | { statusCode?: number; message?: string }) {
     throw new ApiError(
-      500,
+      error.statusCode || 500,
       error.message || "Something went wrong while registering new user"
     );
   }
@@ -160,9 +160,9 @@ const loginUser = async (req: any, res: any) => {
           refreshToken,
         })
       );
-  } catch (error: any | { message: string }) {
+  } catch (error: any | { statusCode?: number; message?: string }) {
     throw new ApiError(
-      500,
+      error.statusCode || 500,
       error.message || "Something went wrong while performing login"
     );
   }
@@ -198,9 +198,9 @@ const logoutUser = async (req: any, res: any) => {
       .clearCookie("accessToken", cookieOptions)
       .clearCookie("refreshToken", cookieOptions)
       .json(new ApiResponse(204, true, "User logged out successfully", {}));
-  } catch (error: any | { message: string }) {
+  } catch (error: any | { statusCode?: number; message?: string }) {
     throw new ApiError(
-      500,
+      error.statusCode || 500,
       error.message || "Something went wrong while performing logout"
     );
   }
@@ -250,9 +250,9 @@ const refreshAccessToken = async (req: any, res: any) => {
           refreshToken: newRefreshToken,
         })
       );
-  } catch (error: any | { message: string }) {
+  } catch (error: any | { statusCode?: number; message?: string }) {
     throw new ApiError(
-      500,
+      error.statusCode || 500,
       error?.message || "Something went wrong while refreshing the token"
     );
   }
@@ -292,9 +292,9 @@ const resetPassword = async (req: any, res: any) => {
     return res
       .status(204)
       .json(new ApiResponse(204, true, "Password changed successfully", {}));
-  } catch (error: any | { message: string }) {
+  } catch (error: any | { statusCode?: number; message?: string }) {
     throw new ApiError(
-      500,
+      error.statusCode || 500,
       error.message || "Something went wrong while resetting the password"
     );
   }
@@ -310,9 +310,9 @@ const resetPassword = async (req: any, res: any) => {
 const getCurrentUser = async (req: any, res: any) => {
   try {
     return res.status(200).json(new ApiResponse(200, true, "", req?.user));
-  } catch (error: any | { message: string }) {
+  } catch (error: any | { statusCode?: number; message?: string }) {
     throw new ApiError(
-      500,
+      error.statusCode || 500,
       error.message || "Something went wrong while getting current user"
     );
   }
@@ -362,9 +362,9 @@ const updateProfileDetails = async (req: any, res: any) => {
       .json(
         new ApiResponse(200, true, "User updated successfully", updatedUser)
       );
-  } catch (error: any | { message: string }) {
+  } catch (error: any | { statusCode?: number; message?: string }) {
     throw new ApiError(
-      500,
+      error.statusCode || 500,
       error.message || "Something went wrong while updating the fields"
     );
   }
@@ -428,9 +428,9 @@ const updateAvatar = async (req: any, res: any) => {
       .json(
         new ApiResponse(200, true, "Avatar updated successfully", updatedUser)
       );
-  } catch (error: any | { message: string }) {
+  } catch (error: any | { statusCode?: number; message?: string }) {
     throw new ApiError(
-      500,
+      error.statusCode || 500,
       error.message || "Something went wrong while updating the avatar image"
     );
   }
@@ -497,9 +497,9 @@ const updateCover = async (req: any, res: any) => {
           updatedUser
         )
       );
-  } catch (error: any | { message: string }) {
+  } catch (error: any | { statusCode?: number; message?: string }) {
     throw new ApiError(
-      500,
+      error.statusCode || 500,
       error.message || "Something went wrong while updating the Cover image"
     );
   }
@@ -592,9 +592,9 @@ const getChannelProfile = async (req: any, res: any) => {
           channel[0]
         )
       );
-  } catch (error: any | { message: string }) {
+  } catch (error: any | { statusCode?: number; message?: string }) {
     throw new ApiError(
-      500,
+      error.statusCode || 500,
       error.message || "Something went wrong while getting Channel info"
     );
   }
@@ -668,9 +668,9 @@ const getWatchHistory = async (req: any, res: any) => {
           user[0].watchHistory
         )
       );
-  } catch (error: any | { message: string }) {
+  } catch (error: any | { statusCode?: number; message?: string }) {
     throw new ApiError(
-      500,
+      error.statusCode || 500,
       error.message || "Something went wrong while getting watch history"
     );
   }

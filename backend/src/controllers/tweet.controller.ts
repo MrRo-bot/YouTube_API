@@ -23,9 +23,9 @@ const createTweet = async (req: any, res: any) => {
     return res
       .status(201)
       .json(new ApiResponse(201, true, "Tweet published successfully", tweet));
-  } catch (error: any | { message: string }) {
+  } catch (error: any | { statusCode?: number; message?: string }) {
     throw new ApiError(
-      500,
+      error.statusCode || 500,
       error.message || "Something went wrong while creating the Tweet"
     );
   }
@@ -80,9 +80,9 @@ const getUserTweets = async (req: any, res: any) => {
           userTweets
         )
       );
-  } catch (error: any | { message: string }) {
+  } catch (error: any | { statusCode?: number; message?: string }) {
     throw new ApiError(
-      500,
+      error.statusCode || 500,
       error.message || "Something went wrong while fetching User Tweets"
     );
   }
@@ -116,9 +116,9 @@ const updateTweet = async (req: any, res: any) => {
       .json(
         new ApiResponse(200, true, "Tweet updated successfully", updatedTweet)
       );
-  } catch (error: any | { message: string }) {
+  } catch (error: any | { statusCode?: number; message?: string }) {
     throw new ApiError(
-      500,
+      error.statusCode || 500,
       error.message || "Something went wrong while updating the Tweet"
     );
   }
@@ -134,9 +134,9 @@ const deleteTweet = async (req: any, res: any) => {
     if (!tweet) throw new ApiError(404, "Tweet not found");
 
     res.status(204).json(new ApiResponse(204, true, "Tweet Deleted!", {}));
-  } catch (error: any | { message: string }) {
+  } catch (error: any | { statusCode?: number; message?: string }) {
     throw new ApiError(
-      500,
+      error.statusCode || 500,
       error.message || "Something went wrong while deleting the Tweet"
     );
   }
