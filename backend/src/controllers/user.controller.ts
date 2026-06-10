@@ -396,12 +396,14 @@ const updateAvatar = async (req: any, res: any) => {
     const user = await User.findById(req.user?._id);
     if (!user) throw new ApiError(401, "Unauthorized update");
 
-    const deletePrevAvatarResponse = await deleteFromCloudinary(user?.avatar);
-    if (!deletePrevAvatarResponse)
-      throw new ApiError(
-        400,
-        "Error while deleting previous avatar image from cloudinary"
-      );
+    if (user.avatar) {
+      const deletePrevAvatarResponse = await deleteFromCloudinary(user.avatar);
+      if (!deletePrevAvatarResponse)
+        throw new ApiError(
+          400,
+          "Error while deleting previous avatar image from cloudinary"
+        );
+    }
 
     const updatedUser = await User.findByIdAndUpdate(
       user._id,
@@ -456,14 +458,16 @@ const updateCover = async (req: any, res: any) => {
     const user = await User.findById(req.user?._id);
     if (!user) throw new ApiError(401, "Unauthorized update");
 
-    const deletePrevCoverResponse = await deleteFromCloudinary(
-      user?.coverImage
-    );
-    if (!deletePrevCoverResponse)
-      throw new ApiError(
-        400,
-        "Error while deleting previous cover image from cloudinary"
+    if (user.coverImage) {
+      const deletePrevCoverResponse = await deleteFromCloudinary(
+        user?.coverImage
       );
+      if (!deletePrevCoverResponse)
+        throw new ApiError(
+          400,
+          "Error while deleting previous cover image from cloudinary"
+        );
+    }
 
     const updatedUser = await User.findByIdAndUpdate(
       user._id,
