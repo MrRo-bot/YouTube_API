@@ -45,6 +45,7 @@ const getVideoComments = async (req: any, res: any) => {
           title: 1,
           description: 1,
           comments: 1,
+          tweetsCount: 1,
           createdAt: 1,
         },
       },
