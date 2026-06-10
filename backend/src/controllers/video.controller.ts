@@ -9,7 +9,7 @@ import {
 } from "../utils/cloudinary.js";
 
 const getAllVideos = async (req: any, res: any) => {
-  //TODO: VERIFY need to check everything here
+  //getting all videos with pagination using queries below
   const {
     page = 1,
     limit = 10,
@@ -112,10 +112,10 @@ const getAllVideos = async (req: any, res: any) => {
 };
 
 const publishAVideo = async (req: any, res: any) => {
-  //TODO: VERIFY get video, upload to cloudinary, create video
+  //getting video meta, uploading to cloudinary, creating new video object
   const { title, description } = req.body;
-  const thumbnailLocalPath = req.file?.thumbnail?.[0]?.path;
-  const videoFileLocalPath = req.file?.videoFile?.[0]?.path;
+  const thumbnailLocalPath = req.files?.thumbnail?.[0]?.path;
+  const videoFileLocalPath = req.files?.videoFile?.[0]?.path;
 
   try {
     const updates: {
@@ -165,10 +165,14 @@ const publishAVideo = async (req: any, res: any) => {
 };
 
 const getVideoById = async (req: any, res: any) => {
+  //getting video data by video id
   const { videoId } = req.params;
-  //TODO: VERIFY get video by id
 
   try {
+    if (!isValidObjectId(videoId)) {
+      throw new ApiError(400, "Invalid Video ID");
+    }
+
     const video = await Video.findById(videoId);
 
     if (!video) throw new ApiError(404, "Video not found");
@@ -183,7 +187,7 @@ const getVideoById = async (req: any, res: any) => {
 };
 
 const updateVideo = async (req: any, res: any) => {
-  //TODO: VERIFY update video details like title, description, thumbnail
+  //updating video details like title, description, thumbnail
   const { videoId } = req.params;
   const { title, description } = req.body;
   const thumbnailLocalPath = req.file?.thumbnail?.[0]?.path;
@@ -203,6 +207,10 @@ const updateVideo = async (req: any, res: any) => {
 
     if (Object.keys(updates).length < 1)
       throw new ApiError(400, "Please provide valid field data to update");
+
+    if (!isValidObjectId(videoId)) {
+      throw new ApiError(400, "Invalid Video ID");
+    }
 
     const updatedVideo = await Video.findByIdAndUpdate(
       videoId,
@@ -233,16 +241,27 @@ const updateVideo = async (req: any, res: any) => {
 
 const deleteVideo = async (req: any, res: any) => {
   const { videoId } = req.params;
-  //TODO: VERIFY delete video
+  //deleting video with thumbnail and video file getting removed from cloudinary servers as well
 
   try {
+    if (!isValidObjectId(videoId)) {
+      throw new ApiError(400, "Invalid VIdeo ID");
+    }
+
     const video = await Video.findByIdAndDelete(videoId);
 
     if (!video) throw new ApiError(404, "Video not found");
 
-    const deleteVideoRes = await deleteFromCloudinary(video?._id);
+    const deleteVideoRes = await deleteFromCloudinary(video.videoFile, "video");
     if (!deleteVideoRes)
       throw new ApiError(400, "Error while deleting Video from Cloudinary");
+
+    const deleteThumbnailRes = await deleteFromCloudinary(
+      video.thumbnail,
+      "image"
+    );
+    if (!deleteThumbnailRes)
+      throw new ApiError(400, "Error while deleting Thumbnail from Cloudinary");
 
     res.status(204).json(new ApiResponse(204, true, "Video Deleted!", {}));
   } catch (error: any | { message: string }) {
@@ -254,23 +273,18 @@ const deleteVideo = async (req: any, res: any) => {
 };
 
 const togglePublishStatus = async (req: any, res: any) => {
+  //switching publish status
   const { videoId } = req.params;
 
   try {
-    const video = await Video.findByIdAndUpdate(
-      videoId,
-      [
-        {
-          $set: { isPublisted: { $not: "$isPublished" } }, // {$not: "$"} toggles boolean field
-        },
-      ],
-      {
-        returnDocument: "after", //sending updated object
-        timestamps: true, //updates updatedAt field
-      }
-    );
-
+    if (!isValidObjectId(videoId)) {
+      throw new ApiError(400, "Invalid Video ID");
+    }
+    const video = await Video.findById(videoId);
     if (!video) throw new ApiError(404, "Video not found");
+
+    video.isPublished = !video.isPublished;
+    await video.save();
 
     res
       .status(200)

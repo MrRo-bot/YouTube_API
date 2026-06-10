@@ -1,18 +1,7 @@
 import { v2 as cloudinary } from "cloudinary";
 import fs from "fs";
 import config from "../config/config.js";
-
-const publicIdFromUrl = (url: string): string => {
-  const clean = url.split("?")[0];
-  // https://res.cloudinary.com/<cloud>/image/upload/v123456/folder/sub/file.jpg
-  // https://res.cloudinary.com/<cloud>/image/upload/folder/sub/file.jpg (no version)
-  // getting everything after /upload/ and removing extension and any leading version token v12345/
-  const afterUpload = clean.split("/upload/")[1];
-  // removing leading version (v123456/) if present
-  const withoutVersion = afterUpload.replace(/^v\d+\//, "");
-  // stripping file extension
-  return withoutVersion.replace(/\.[^/.]+$/, "");
-};
+import { publicIdFromUrl } from "./functions.js";
 
 cloudinary.config({
   cloud_name: config.cloudinary_cloud_name,
@@ -40,13 +29,14 @@ const uploadOnCloudinary = async (localFilePath: string) => {
   }
 };
 
-const deleteFromCloudinary = async (url: string) => {
+const deleteFromCloudinary = async (url: string, resource_type: string) => {
   try {
     if (!url) return null;
 
     //deleting the existing image from cloudinary to make way for new updated ones
-    const response = cloudinary.uploader.destroy(publicIdFromUrl(url), {
+    const response = await cloudinary.uploader.destroy(publicIdFromUrl(url), {
       invalidate: true,
+      resource_type,
     });
 
     return response;
