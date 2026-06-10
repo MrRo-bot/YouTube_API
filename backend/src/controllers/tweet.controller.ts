@@ -6,72 +6,86 @@ import { ApiResponse } from "../utils/apiResponse.js";
 
 const createTweet = async (req: any, res: any) => {
   //TODO: VERIFY create tweet
-  const { content } = req.body;
-  const owner = req.user?._id;
+  try {
+    const { content } = req.body;
+    const owner = req.user?._id;
 
-  if (!content && !isValidObjectId(owner))
-    throw new ApiError(400, "Please provide valid details");
+    if (!content && !isValidObjectId(owner))
+      throw new ApiError(400, "Please provide valid details");
 
-  const tweet = await Tweet.create({
-    content,
-    owner,
-  });
+    const tweet = await Tweet.create({
+      content,
+      owner,
+    });
 
-  if (!tweet) throw new ApiError(400, "Unable to add Tweet");
+    if (!tweet) throw new ApiError(400, "Unable to add Tweet");
 
-  return res
-    .status(201)
-    .json(new ApiResponse(201, true, "Tweet published successfully", tweet));
+    return res
+      .status(201)
+      .json(new ApiResponse(201, true, "Tweet published successfully", tweet));
+  } catch (error: any | { message: string }) {
+    throw new ApiError(
+      500,
+      error.message || "Something went wrong while creating the Tweet"
+    );
+  }
 };
 
 const getUserTweets = async (req: any, res: any) => {
   //TODO: VERIFY get user tweets
   const { userId } = req.params;
 
-  if (!isValidObjectId(userId)) throw new ApiError(404, "User ID not found");
+  try {
+    if (!isValidObjectId(userId)) throw new ApiError(404, "User ID not found");
 
-  const userTweets = await User.aggregate([
-    {
-      $match: { _id: new mongoose.Types.ObjectId(userId) },
-    },
-    {
-      $lookup: {
-        from: "tweets",
-        localField: "_id",
-        foreignField: "owner",
-        as: "tweets",
+    const userTweets = await User.aggregate([
+      {
+        $match: { _id: new mongoose.Types.ObjectId(userId) },
       },
-    },
-    {
-      $addFields: {
-        tweetsCount: {
-          $size: "$tweets",
+      {
+        $lookup: {
+          from: "tweets",
+          localField: "_id",
+          foreignField: "owner",
+          as: "tweets",
         },
       },
-    },
-    {
-      $project: {
-        fullName: 1,
-        username: 1,
-        email: 1,
-        tweets: 1,
-        tweetsCount: 1,
+      {
+        $addFields: {
+          tweetsCount: {
+            $size: "$tweets",
+          },
+        },
       },
-    },
-  ]);
+      {
+        $project: {
+          fullName: 1,
+          username: 1,
+          email: 1,
+          tweets: 1,
+          tweetsCount: 1,
+        },
+      },
+    ]);
 
-  if (!userTweets) throw new ApiError(400, "Unable to get User Tweets");
+    if (!userTweets) throw new ApiError(400, "Unable to get User Tweets");
 
-  return res
-    .status(200)
-    .json(
-      new ApiResponse(
-        200,
-        true,
-        "User's Tweets fetched successfully",
-        userTweets
-      )
+    return res
+      .status(200)
+      .json(
+        new ApiResponse(
+          200,
+          true,
+          "User's Tweets fetched successfully",
+          userTweets
+        )
+      );
+  } catch (error: any | { message: string }) {
+    throw new ApiError(
+      500,
+      error.message || "Something went wrong while fetching User Tweets"
     );
+  }
 };
 
 const updateTweet = async (req: any, res: any) => {
