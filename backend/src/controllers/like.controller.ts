@@ -158,7 +158,7 @@ const getLikedVideos = async (req: any, res: any) => {
       },
     ]);
 
-    if (!likedVideos) throw new ApiError(400, "Unable to get Liked Videos");
+    if (!likedVideos) throw new ApiError(404, "Liked Videos not found");
 
     return res
       .status(200)

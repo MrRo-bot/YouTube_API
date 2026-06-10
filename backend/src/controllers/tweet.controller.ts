@@ -68,7 +68,7 @@ const getUserTweets = async (req: any, res: any) => {
       },
     ]);
 
-    if (!userTweets) throw new ApiError(400, "Unable to get User Tweets");
+    if (!userTweets) throw new ApiError(404, "User Tweets not found");
 
     return res
       .status(200)
