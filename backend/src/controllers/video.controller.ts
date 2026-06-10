@@ -56,12 +56,28 @@ const getAllVideos = async (req: any, res: any) => {
         },
       },
       {
+        $lookup: {
+          from: "videos",
+          localField: "_id",
+          foreignField: "owner",
+          as: "videos",
+        },
+      },
+      {
+        $addFields: {
+          videosCount: {
+            $size: "$videos",
+          },
+        },
+      },
+      {
         $project: {
           owner: 1,
           title: 1,
           description: 1,
           thumbnail: 1,
           videoFile: 1,
+          videosCount: 1,
           duration: 1,
           views: 1,
           createdAt: 1,

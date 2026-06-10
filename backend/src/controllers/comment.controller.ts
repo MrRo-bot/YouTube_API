@@ -34,7 +34,7 @@ const getVideoComments = async (req: any, res: any) => {
       },
       {
         $addFields: {
-          tweetsCount: {
+          commentsCount: {
             $size: "$comments",
           },
         },
@@ -45,7 +45,7 @@ const getVideoComments = async (req: any, res: any) => {
           title: 1,
           description: 1,
           comments: 1,
-          tweetsCount: 1,
+          commentsCount: 1,
           createdAt: 1,
         },
       },
