@@ -20,7 +20,7 @@ const getAllVideos = async (req: any, res: any) => {
   } = req.query;
 
   try {
-    if (!userId || !isValidObjectId(userId)) {
+    if (!isValidObjectId(userId)) {
       throw new ApiError(400, "Valid userId is required");
     }
 
@@ -87,12 +87,11 @@ const getAllVideos = async (req: any, res: any) => {
         filters: { query, sortBy, sortType },
       })
     );
-  } catch (error) {
-    console.error("Get User Videos Error:", error);
-    res.status(500).json({
-      success: false,
-      message: "Failed to fetch videos",
-    });
+  } catch (error: any | { message: string }) {
+    throw new ApiError(
+      500,
+      error.message || "Something went wrong while getting Videos"
+    );
   }
 };
 
