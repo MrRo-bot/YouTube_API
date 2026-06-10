@@ -64,20 +64,12 @@ const getAllVideos = async (req: any, res: any) => {
         },
       },
       {
-        $addFields: {
-          videosCount: {
-            $size: "$videos",
-          },
-        },
-      },
-      {
         $project: {
           owner: 1,
           title: 1,
           description: 1,
           thumbnail: 1,
           videoFile: 1,
-          videosCount: 1,
           duration: 1,
           views: 1,
           createdAt: 1,
@@ -129,13 +121,12 @@ const publishAVideo = async (req: any, res: any) => {
       owner?: ObjectId;
     } = {};
 
-    if (title !== undefined) updates.title = title;
-    if (description !== undefined) updates.description = description;
+    if (title) updates.title = title;
+    if (description) updates.description = description;
     const thumbnailRes = await uploadOnCloudinary(thumbnailLocalPath);
-    if (thumbnailRes !== null && thumbnailRes !== undefined)
-      updates.thumbnail = thumbnailRes.url;
+    if (thumbnailRes) updates.thumbnail = thumbnailRes.url;
     const videoFileRes = await uploadOnCloudinary(videoFileLocalPath);
-    if (videoFileRes !== null && videoFileRes !== undefined) {
+    if (videoFileRes) {
       updates.videoFile = videoFileRes.url;
       updates.duration = videoFileRes.duration;
     }
@@ -193,38 +184,42 @@ const updateVideo = async (req: any, res: any) => {
   const thumbnailLocalPath = req.file?.thumbnail?.[0]?.path;
 
   try {
+    if (!isValidObjectId(videoId)) {
+      throw new ApiError(400, "Invalid Video ID");
+    }
+
     const updates: {
       title?: string;
       description?: string;
       thumbnail?: string;
     } = {};
 
-    if (title !== undefined) updates.title = title;
-    if (description !== undefined) updates.description = description;
-    const thumbnailRes = await uploadOnCloudinary(thumbnailLocalPath);
-    if (thumbnailRes !== null && thumbnailRes !== undefined)
-      updates.thumbnail = thumbnailRes.url;
+    if (title) updates.title = title;
+    if (description) updates.description = description;
 
-    if (Object.keys(updates).length < 1)
-      throw new ApiError(400, "Please provide valid field data to update");
-
-    if (!isValidObjectId(videoId)) {
-      throw new ApiError(400, "Invalid Video ID");
+    if (thumbnailLocalPath) {
+      const thumbnailRes = await uploadOnCloudinary(thumbnailLocalPath);
+      if (thumbnailRes?.url) {
+        updates.thumbnail = thumbnailRes.url;
+      } else {
+        throw new ApiError(400, "Failed to upload Thumbnail");
+      }
     }
 
-    const updatedVideo = await Video.findByIdAndUpdate(
-      videoId,
-      {
-        $set: updates,
-      },
-      {
-        returnDocument: "after",
-        runValidators: true,
-        timestamps: true,
-      }
-    );
+    if (Object.keys(updates).length < 1)
+      throw new ApiError(400, "Please provide atleast one field to update");
 
-    if (!updatedVideo) throw new ApiError(400, "Unable to update Video data");
+    const updatedVideo = await Video.findById(videoId);
+
+    if (!updatedVideo) {
+      throw new ApiError(404, "Video not found");
+    }
+
+    if (updates.title) updatedVideo.title = updates.title;
+    if (updates.description) updatedVideo.description = updates.description;
+    if (updates.thumbnail) updatedVideo.thumbnail = updates.thumbnail;
+
+    await updatedVideo.save();
 
     return res
       .status(200)

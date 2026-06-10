@@ -209,8 +209,8 @@ const updatePlaylist = async (req: any, res: any) => {
 
   const updates: { name?: string; description?: string } = {};
 
-  if (name !== undefined) updates.name = name;
-  if (description !== undefined) updates.description = description;
+  if (name) updates.name = name;
+  if (description) updates.description = description;
 
   if (Object.keys(updates).length < 1)
     throw new ApiError(400, "No fields provided to update the Playlist");

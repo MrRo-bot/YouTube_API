@@ -334,8 +334,8 @@ const updateProfileDetails = async (req: any, res: any) => {
 
   const updates: { fullName?: string; email?: string } = {};
 
-  if (typeof fullName !== "undefined") updates.fullName = fullName;
-  if (typeof email !== "undefined") updates.email = email;
+  if (fullName) updates.fullName = fullName;
+  if (email) updates.email = email;
 
   if (Object.keys(updates).length < 1)
     throw new ApiError(400, "Please provide valid field data to update");
@@ -401,7 +401,10 @@ const updateAvatar = async (req: any, res: any) => {
     if (!user) throw new ApiError(401, "Unauthorized update");
 
     if (user.avatar) {
-      const deletePrevAvatarResponse = await deleteFromCloudinary(user.avatar);
+      const deletePrevAvatarResponse = await deleteFromCloudinary(
+        user.avatar,
+        "image"
+      );
       if (!deletePrevAvatarResponse)
         throw new ApiError(
           400,
@@ -465,7 +468,8 @@ const updateCover = async (req: any, res: any) => {
 
     if (user.coverImage) {
       const deletePrevCoverResponse = await deleteFromCloudinary(
-        user?.coverImage
+        user?.coverImage,
+        "image"
       );
       if (!deletePrevCoverResponse)
         throw new ApiError(
