@@ -6,9 +6,9 @@ import { ApiResponse } from "../utils/apiResponse.js";
 
 const createPlaylist = async (req: any, res: any) => {
   const { name, description } = req.body;
-  //TODO: VERIFY create playlist
+  //creating new blank playlist
 
-  if (!name && !description)
+  if (!name || !description)
     throw new ApiError(400, "Please provide Playlist Name and Description");
 
   try {
@@ -34,7 +34,7 @@ const createPlaylist = async (req: any, res: any) => {
 
 const getUserPlaylists = async (req: any, res: any) => {
   const { userId } = req.params;
-  //TODO: VERIFY get user playlists
+  //getting users playlists
 
   try {
     if (!isValidObjectId(userId)) throw new ApiError(404, "User ID not found");
@@ -53,7 +53,7 @@ const getUserPlaylists = async (req: any, res: any) => {
       },
       {
         $addFields: {
-          playlistsCount: {
+          playlistCount: {
             $size: "$userPlaylists",
           },
         },
@@ -64,7 +64,7 @@ const getUserPlaylists = async (req: any, res: any) => {
           username: 1,
           email: 1,
           userPlaylists: 1,
-          playlistsCount: 1,
+          playlistCount: 1,
         },
       },
     ]);
@@ -114,22 +114,23 @@ const getPlaylistById = async (req: any, res: any) => {
 
 const addVideoToPlaylist = async (req: any, res: any) => {
   const { playlistId, videoId } = req.params;
-
+  //adding video to an existing playlist
   if (!isValidObjectId(videoId) || !isValidObjectId(playlistId))
     throw new ApiError(400, "Invalid IDs");
 
   try {
     const updatedPlaylist = await Playlist.updateOne(
-      playlistId,
-      { $addToSet: { videos: videoId } }, // $addToSet avoids duplicates
+      { _id: playlistId },
+      { $addToSet: { videos: new mongoose.Types.ObjectId(videoId) } }, // $addToSet avoids duplicates
       {
         runValidators: true,
         timestamps: true,
       }
     );
 
-    if (!updatedPlaylist)
-      throw new ApiError(400, "Unable to add Video in Playlist");
+    if (updatedPlaylist.matchedCount === 0) {
+      throw new ApiError(404, "Playlist not found");
+    }
 
     return res
       .status(200)
@@ -146,23 +147,24 @@ const addVideoToPlaylist = async (req: any, res: any) => {
 
 const removeVideoFromPlaylist = async (req: any, res: any) => {
   const { playlistId, videoId } = req.params;
-  //TODO: VERIFY remove video from playlist
+  //removing video from a playlist if video exists
 
   if (!isValidObjectId(videoId) || !isValidObjectId(playlistId))
     throw new ApiError(400, "Invalid IDs");
 
   try {
     const updatedPlaylist = await Playlist.updateOne(
-      playlistId,
-      { $pull: { videos: videoId } },
+      { _id: playlistId },
+      { $pull: { videos: new mongoose.Types.ObjectId(videoId) } },
       {
         runValidators: true,
         timestamps: true,
       }
     );
 
-    if (!updatedPlaylist)
-      throw new ApiError(400, "Unable to remove Video in Playlist");
+    if (updatedPlaylist.matchedCount === 0) {
+      throw new ApiError(404, "Playlist not found");
+    }
 
     return res
       .status(200)
@@ -180,14 +182,15 @@ const removeVideoFromPlaylist = async (req: any, res: any) => {
 
 const deletePlaylist = async (req: any, res: any) => {
   const { playlistId } = req.params;
-  //TODO: VERIFY delete playlist
+  //deleting playlist
 
   if (!isValidObjectId(playlistId))
     throw new ApiError(400, "Invalid Playlist ID");
 
   try {
-    await Playlist.findByIdAndDelete(playlistId);
+    const deletedPlaylist = await Playlist.findByIdAndDelete(playlistId);
 
+    if (!deletedPlaylist) throw new ApiError(404, "Playlist doesn't exist");
     return res
       .status(204)
       .json(new ApiResponse(204, true, "Deleted the Playlist", {}));
@@ -202,38 +205,39 @@ const deletePlaylist = async (req: any, res: any) => {
 const updatePlaylist = async (req: any, res: any) => {
   const { playlistId } = req.params;
   const { name, description } = req.body;
-  //TODO: VERIFY update playlist
-
-  if (!isValidObjectId(playlistId))
-    throw new ApiError(400, "Invalid Playlist ID");
-
-  const updates: { name?: string; description?: string } = {};
-
-  if (name) updates.name = name;
-  if (description) updates.description = description;
-
-  if (Object.keys(updates).length < 1)
-    throw new ApiError(400, "No fields provided to update the Playlist");
+  //updating playlist information
 
   try {
-    const updatedPlaylist = await Playlist.findByIdAndUpdate(
-      playlistId,
-      {
-        $set: updates,
-      },
-      {
-        returnDocument: "after",
-        runValidators: true,
-        timestamps: true,
-      }
-    );
+    if (!isValidObjectId(playlistId))
+      throw new ApiError(400, "Invalid Playlist ID");
 
-    if (!updatedPlaylist)
-      throw new ApiError(400, "Unable to update the Playlist");
+    const updates: { name?: string; description?: string } = {};
+
+    if (name) updates.name = name;
+    if (description) updates.description = description;
+
+    if (Object.keys(updates).length < 1)
+      throw new ApiError(400, "No fields provided to update the Playlist");
+
+    const updatedPlaylist = await Playlist.findById(playlistId);
+
+    if (!updatedPlaylist) throw new ApiError(404, "Playlist not found");
+
+    if (updates.name) updatedPlaylist.name = updates.name;
+    if (updates.description) updatedPlaylist.description = updates.description;
+
+    await updatedPlaylist.save();
 
     return res
       .status(200)
-      .json(new ApiResponse(200, true, "Playlist updated", updatedPlaylist));
+      .json(
+        new ApiResponse(
+          200,
+          true,
+          "Playlist updated successfully",
+          updatedPlaylist
+        )
+      );
   } catch (error: any | { statusCode?: number; message?: string }) {
     throw new ApiError(
       error.statusCode || 500,
