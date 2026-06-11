@@ -11,6 +11,7 @@ import {
   updateCover,
   getChannelProfile,
   getWatchHistory,
+  addToWatchHistory,
 } from "../controllers/user.controller.js";
 import { upload } from "../middlewares/multer.middleware.js";
 import { verifyJWT } from "../middlewares/auth.middleware.js";
@@ -31,6 +32,7 @@ router.route("/login").post(loginUser);
 router.route("/current-user").get(verifyJWT, getCurrentUser);
 router.route("/c/:username").get(verifyJWT, getChannelProfile);
 router.route("/watch-history").get(verifyJWT, getWatchHistory);
+router.route("/add/watch-history/:videoId").patch(verifyJWT, addToWatchHistory);
 
 //patch instead of post
 router.route("/update-profile").patch(verifyJWT, updateProfileDetails);

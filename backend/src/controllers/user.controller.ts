@@ -1,4 +1,4 @@
-import { type ObjectId, Types } from "mongoose";
+import mongoose, { isValidObjectId, type ObjectId, Types } from "mongoose";
 import { User } from "../models/user.model.js";
 import { ApiError } from "../utils/apiError.js";
 import { ApiResponse } from "../utils/apiResponse.js";
@@ -680,6 +680,43 @@ const getWatchHistory = async (req: any, res: any) => {
   }
 };
 
+const addToWatchHistory = async (req: any, res: any) => {
+  //TODO: VERIFY THAT IF IT WORKS OR NOT
+  const { videoId } = req.params;
+
+  try {
+    if (!isValidObjectId(videoId))
+      throw new ApiError(404, "Video ID not found");
+
+    if (!isValidObjectId(req?.user?._id))
+      throw new ApiError(404, "User not found");
+
+    const updatedWatchHistory = await User.updateOne(
+      { _id: new mongoose.Types.ObjectId(req?.user?._id) },
+      { $addToSet: { watchHistory: videoId } },
+      {
+        runValidators: true,
+        timestamps: true,
+      }
+    );
+
+    if (updatedWatchHistory.modifiedCount === 0) {
+      throw new ApiError(400, "Unable to add video to user's watch history");
+    }
+
+    return res
+      .status(200)
+      .json(
+        new ApiResponse(200, true, "Watch history updated successfully", {})
+      );
+  } catch (error: any | { statusCode?: number; message?: string }) {
+    throw new ApiError(
+      error.statusCode || 500,
+      error.message || "Something went wrong while updating watch history"
+    );
+  }
+};
+
 export {
   registerUser,
   loginUser,
@@ -692,4 +729,5 @@ export {
   updateCover,
   getChannelProfile,
   getWatchHistory,
+  addToWatchHistory,
 };
