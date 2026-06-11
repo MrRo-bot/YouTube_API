@@ -123,7 +123,7 @@ const toggleTweetLike = async (req: any, res: any) => {
 
 const getLikedVideos = async (req: any, res: any) => {
   //TODO: VERIFY get all liked videos
-  const { userId } = req.user?._id;
+  const userId = req.user?._id;
 
   try {
     if (!isValidObjectId(userId)) throw new ApiError(404, "User ID not found");

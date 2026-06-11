@@ -33,19 +33,10 @@ const getVideoComments = async (req: any, res: any) => {
         },
       },
       {
-        $addFields: {
-          commentsCount: {
-            $size: "$comments",
-          },
-        },
-      },
-      {
         $project: {
           owner: 1,
-          title: 1,
-          description: 1,
-          comments: 1,
-          commentsCount: 1,
+          video: 1,
+          content: 1,
           createdAt: 1,
         },
       },
@@ -57,7 +48,7 @@ const getVideoComments = async (req: any, res: any) => {
       new ApiResponse(200, true, "Paginated Comments", {
         data: result.docs,
         pagination: {
-          totalDocs: result.totalDocs,
+          totalComments: result.totalDocs,
           limit: result.limit,
           page: result.page,
           totalPages: result.totalPages,
@@ -77,14 +68,14 @@ const getVideoComments = async (req: any, res: any) => {
 };
 
 const addComment = async (req: any, res: any) => {
-  //TODO: VERIFY add a comment to a video
-  const { content } = req.body;
+  //adding a comment to a video
   const { videoId } = req.params;
-  const { userId } = req.user?._id;
+  const { content } = req.body;
+  const userId = req?.user.id;
 
   try {
-    if (!isValidObjectId(videoId) && !isValidObjectId(userId))
-      throw new ApiError(400, "Please provide valid details");
+    if (!isValidObjectId(videoId) || !isValidObjectId(userId))
+      throw new ApiError(400, "Please provide valid ID's");
 
     const comment = await Comment.create({
       content,
@@ -96,9 +87,7 @@ const addComment = async (req: any, res: any) => {
 
     return res
       .status(201)
-      .json(
-        new ApiResponse(201, true, "Comment published successfully", comment)
-      );
+      .json(new ApiResponse(201, true, "Comment added successfully", comment));
   } catch (error: any | { statusCode?: number; message?: string }) {
     throw new ApiError(
       error.statusCode || 500,
@@ -108,7 +97,7 @@ const addComment = async (req: any, res: any) => {
 };
 
 const updateComment = async (req: any, res: any) => {
-  //TODO: VERIFY update a comment
+  //updating a comment
   const { commentId } = req.params;
   const { content } = req.body;
 
@@ -149,7 +138,7 @@ const updateComment = async (req: any, res: any) => {
 };
 
 const deleteComment = async (req: any, res: any) => {
-  //TODO: VERIFY delete a comment
+  //deleting a comment
   const { commentId } = req.params;
 
   try {

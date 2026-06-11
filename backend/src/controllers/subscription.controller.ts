@@ -7,7 +7,7 @@ import { isValidObjectId, Types } from "mongoose";
 //TODO: VERIFY toggle subscription
 const toggleSubscription = async (req: any, res: any) => {
   const { channelId } = req.params;
-  const { userId } = req.user?._id;
+  const userId = req.user?._id;
 
   if (!channelId) throw new ApiError(400, "Provide Channel ID");
 

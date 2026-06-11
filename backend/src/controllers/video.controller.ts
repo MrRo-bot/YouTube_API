@@ -83,7 +83,7 @@ const getAllVideos = async (req: any, res: any) => {
       new ApiResponse(200, true, "Paginated Videos", {
         data: result.docs,
         pagination: {
-          totalDocs: result.totalDocs,
+          totalVideos: result.totalDocs,
           limit: result.limit,
           page: result.page,
           totalPages: result.totalPages,
