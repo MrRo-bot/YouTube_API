@@ -4,7 +4,7 @@ import { ApiError } from "../utils/apiError.js";
 import { ApiResponse } from "../utils/apiResponse.js";
 
 const getVideoComments = async (req: any, res: any) => {
-  //TODO: VERIFY get all comments for a video
+  //getting all comments of a video
   const { videoId } = req.params;
   const { page = 1, limit = 10 } = req.query;
 

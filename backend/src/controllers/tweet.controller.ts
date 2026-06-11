@@ -5,7 +5,7 @@ import { ApiError } from "../utils/apiError.js";
 import { ApiResponse } from "../utils/apiResponse.js";
 
 const createTweet = async (req: any, res: any) => {
-  //TODO: VERIFY create tweet
+  //creating tweet
   const { content } = req.body;
   const owner = req.user?._id;
 
@@ -32,7 +32,7 @@ const createTweet = async (req: any, res: any) => {
 };
 
 const getUserTweets = async (req: any, res: any) => {
-  //TODO: VERIFY get user tweets
+  //getting user tweets
   const { userId } = req.params;
 
   try {
@@ -89,7 +89,7 @@ const getUserTweets = async (req: any, res: any) => {
 };
 
 const updateTweet = async (req: any, res: any) => {
-  //TODO: VERIFY update tweet
+  //updating tweet
   const { tweetId } = req.params;
   const { content } = req.body;
 
@@ -125,7 +125,7 @@ const updateTweet = async (req: any, res: any) => {
 };
 
 const deleteTweet = async (req: any, res: any) => {
-  //TODO: VERIFY delete tweet
+  //deleting tweet
   const { tweetId } = req.params;
 
   try {

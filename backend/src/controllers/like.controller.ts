@@ -5,7 +5,7 @@ import { ApiResponse } from "../utils/apiResponse.js";
 
 const toggleVideoLike = async (req: any, res: any) => {
   const { videoId } = req.params;
-  //TODO: VERIFY toggle like on video
+  //toggle like on a video
 
   if (!isValidObjectId(videoId)) throw new ApiError(400, "Invalid Video ID");
 
@@ -26,6 +26,7 @@ const toggleVideoLike = async (req: any, res: any) => {
       // like video
       await Like.create({
         video: videoId,
+        likedBy: req.user?._id,
       });
 
       return res.status(201).json(
@@ -44,7 +45,7 @@ const toggleVideoLike = async (req: any, res: any) => {
 
 const toggleCommentLike = async (req: any, res: any) => {
   const { commentId } = req.params;
-  //TODO: VERIFY toggle like on comment
+  //toggle like on a comment
 
   if (!isValidObjectId(commentId))
     throw new ApiError(400, "Invalid Comment ID");
@@ -66,6 +67,7 @@ const toggleCommentLike = async (req: any, res: any) => {
       // like comment
       await Like.create({
         comment: commentId,
+        likedBy: req.user?._id,
       });
 
       return res.status(201).json(
@@ -84,7 +86,7 @@ const toggleCommentLike = async (req: any, res: any) => {
 
 const toggleTweetLike = async (req: any, res: any) => {
   const { tweetId } = req.params;
-  //TODO: VERIFY toggle like on tweet
+  //toggle like on a tweet
 
   if (!isValidObjectId(tweetId)) throw new ApiError(400, "Invalid Tweet ID");
 
@@ -105,6 +107,7 @@ const toggleTweetLike = async (req: any, res: any) => {
       // like tweet
       await Like.create({
         tweet: tweetId,
+        likedBy: req.user?._id,
       });
 
       return res.status(201).json(
@@ -130,7 +133,7 @@ const getLikedVideos = async (req: any, res: any) => {
 
     const likedVideos = await Like.aggregate([
       {
-        $match: { video: new mongoose.Types.ObjectId(userId) },
+        $match: { likedBy: new mongoose.Types.ObjectId(userId) },
       },
       {
         $lookup: {
@@ -141,19 +144,9 @@ const getLikedVideos = async (req: any, res: any) => {
         },
       },
       {
-        $addFields: {
-          likedVideosCount: {
-            $size: "$likedVideos",
-          },
-        },
-      },
-      {
         $project: {
-          fullName: 1,
-          username: 1,
-          email: 1,
-          likedVideos: 1,
-          likedVideosCount: 1,
+          video: 1,
+          likedBy: 1,
         },
       },
     ]);
