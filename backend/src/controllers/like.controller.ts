@@ -2,6 +2,7 @@ import mongoose, { isValidObjectId } from "mongoose";
 import { Like } from "../models/like.model.js";
 import { ApiError } from "../utils/apiError.js";
 import { ApiResponse } from "../utils/apiResponse.js";
+import { User } from "../models/user.model.js";
 
 const toggleVideoLike = async (req: any, res: any) => {
   const { videoId } = req.params;
@@ -125,11 +126,13 @@ const toggleTweetLike = async (req: any, res: any) => {
 };
 
 const getLikedVideos = async (req: any, res: any) => {
-  //TODO: VERIFY get all liked videos
+  //getting all liked videos of existing user
   const userId = req.user?._id;
 
   try {
-    if (!isValidObjectId(userId)) throw new ApiError(404, "User ID not found");
+    const user = await User.findById(userId);
+    if (!isValidObjectId(userId) || !user)
+      throw new ApiError(404, "User ID not found");
 
     const likedVideos = await Like.aggregate([
       {

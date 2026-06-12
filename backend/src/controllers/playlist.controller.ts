@@ -37,7 +37,9 @@ const getUserPlaylists = async (req: any, res: any) => {
   //getting users playlists
 
   try {
-    if (!isValidObjectId(userId)) throw new ApiError(404, "User ID not found");
+    const user = await User.findById(userId);
+    if (!isValidObjectId(userId) || !user)
+      throw new ApiError(404, "User ID not found");
 
     const userPlaylist = await User.aggregate([
       {

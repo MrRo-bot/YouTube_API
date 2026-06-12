@@ -10,7 +10,7 @@ const createTweet = async (req: any, res: any) => {
   const owner = req.user?._id;
 
   try {
-    if (!content && !isValidObjectId(owner))
+    if (!content || !isValidObjectId(owner))
       throw new ApiError(400, "Please provide valid details");
 
     const tweet = await Tweet.create({
@@ -36,7 +36,9 @@ const getUserTweets = async (req: any, res: any) => {
   const { userId } = req.params;
 
   try {
-    if (!isValidObjectId(userId)) throw new ApiError(404, "User ID not found");
+    const user = await User.findById(userId);
+    if (!isValidObjectId(userId) || !user)
+      throw new ApiError(404, "User ID not found");
 
     const userTweets = await User.aggregate([
       {
@@ -94,7 +96,7 @@ const updateTweet = async (req: any, res: any) => {
   const { content } = req.body;
 
   try {
-    if (!tweetId && !content)
+    if (!tweetId || !content)
       throw new ApiError(400, "Please provide valid details");
 
     const updatedTweet = await Tweet.findByIdAndUpdate(
