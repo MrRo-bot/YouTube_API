@@ -137,7 +137,7 @@ const loginUser = async (req: any, res: any) => {
 
     const isPasswordValid = await user.isPasswordValid(password);
     if (!isPasswordValid) {
-      throw new ApiError(401, "Invalid user credentials");
+      throw new ApiError(401, "Invalid Password");
     }
 
     const { accessToken, refreshToken } =

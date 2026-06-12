@@ -32,9 +32,8 @@ router.route("/login").post(loginUser);
 router.route("/current-user").get(verifyJWT, getCurrentUser);
 router.route("/c/:username").get(verifyJWT, getChannelProfile);
 router.route("/watch-history").get(verifyJWT, getWatchHistory);
-router.route("/add/watch-history/:videoId").patch(verifyJWT, addToWatchHistory);
 
-//patch instead of post
+router.route("/add/watch-history/:videoId").patch(verifyJWT, addToWatchHistory);
 router.route("/update-profile").patch(verifyJWT, updateProfileDetails);
 router
   .route("/update-avatar")
