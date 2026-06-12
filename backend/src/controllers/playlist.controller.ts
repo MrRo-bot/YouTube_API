@@ -5,18 +5,18 @@ import { ApiError } from "../utils/apiError.js";
 import { ApiResponse } from "../utils/apiResponse.js";
 
 const createPlaylist = async (req: any, res: any) => {
-  const { name, description } = req.body;
   //creating new blank playlist
-
-  if (!name || !description)
-    throw new ApiError(400, "Please provide Playlist Name and Description");
+  const { name, description } = req.body;
+  const userId = req.user?._id;
 
   try {
+    if (!name || !description)
+      throw new ApiError(400, "Please provide Playlist Name and Description");
     const newPlaylist = await Playlist.create({
       name,
       description,
       videos: [],
-      owner: req.user?._id,
+      owner: userId,
     });
 
     if (!newPlaylist) throw new ApiError(400, "Unable to create Playlist");
@@ -34,12 +34,13 @@ const createPlaylist = async (req: any, res: any) => {
 
 const getUserPlaylists = async (req: any, res: any) => {
   //getting users playlists
+  const userId = req.user?._id;
 
   try {
-    if (!req.user?._id) throw new ApiError(404, "User ID not found");
+    if (!userId) throw new ApiError(404, "User ID not found");
 
     const userPlaylist = await User.aggregate([
-      { $match: { _id: new mongoose.Types.ObjectId(req.user?._id) } },
+      { $match: { _id: new mongoose.Types.ObjectId(userId) } },
       {
         $lookup: {
           from: "playlists",
@@ -130,8 +131,8 @@ const getUserPlaylists = async (req: any, res: any) => {
 };
 
 const getPlaylistById = async (req: any, res: any) => {
-  const { playlistId } = req.params;
   //getting playlist by id
+  const { playlistId } = req.params;
 
   if (!isValidObjectId(playlistId))
     throw new ApiError(400, "Invalid Playlist ID");
@@ -153,8 +154,9 @@ const getPlaylistById = async (req: any, res: any) => {
 };
 
 const addVideoToPlaylist = async (req: any, res: any) => {
-  const { playlistId, videoId } = req.params;
   //adding video to an existing playlist
+  const { playlistId, videoId } = req.params;
+
   if (!isValidObjectId(videoId) || !isValidObjectId(playlistId))
     throw new ApiError(400, "Invalid IDs");
 
@@ -186,13 +188,13 @@ const addVideoToPlaylist = async (req: any, res: any) => {
 };
 
 const removeVideoFromPlaylist = async (req: any, res: any) => {
-  const { playlistId, videoId } = req.params;
   //removing video from a playlist if video exists
-
-  if (!isValidObjectId(videoId) || !isValidObjectId(playlistId))
-    throw new ApiError(400, "Invalid IDs");
+  const { playlistId, videoId } = req.params;
 
   try {
+    if (!isValidObjectId(videoId) || !isValidObjectId(playlistId))
+      throw new ApiError(400, "Invalid IDs");
+
     const updatedPlaylist = await Playlist.updateOne(
       { _id: playlistId },
       { $pull: { videos: new mongoose.Types.ObjectId(videoId) } },
@@ -221,13 +223,13 @@ const removeVideoFromPlaylist = async (req: any, res: any) => {
 };
 
 const deletePlaylist = async (req: any, res: any) => {
-  const { playlistId } = req.params;
   //deleting playlist
-
-  if (!isValidObjectId(playlistId))
-    throw new ApiError(400, "Invalid Playlist ID");
+  const { playlistId } = req.params;
 
   try {
+    if (!isValidObjectId(playlistId))
+      throw new ApiError(400, "Invalid Playlist ID");
+
     const deletedPlaylist = await Playlist.findByIdAndDelete(playlistId);
 
     if (!deletedPlaylist) throw new ApiError(404, "Playlist doesn't exist");
@@ -243,9 +245,9 @@ const deletePlaylist = async (req: any, res: any) => {
 };
 
 const updatePlaylist = async (req: any, res: any) => {
+  //updating playlist information
   const { playlistId } = req.params;
   const { name, description } = req.body;
-  //updating playlist information
 
   try {
     if (!isValidObjectId(playlistId))

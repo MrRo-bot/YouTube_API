@@ -52,8 +52,9 @@ const toggleSubscription = async (req: any, res: any) => {
 
 const getUserChannelSubscribers = async (req: any, res: any) => {
   //getting subscribers list of current channel
+  const userId = req.user?._id;
+
   try {
-    const userId = req.user?._id;
     if (!isValidObjectId(userId)) throw new ApiError(400, "Invalid user ID");
 
     const subscribers = await User.aggregate([
@@ -100,8 +101,9 @@ const getUserChannelSubscribers = async (req: any, res: any) => {
 
 const getSubscribedChannels = async (req: any, res: any) => {
   //getting channel list to which current user has subscribed to
+  const userId = req.user?._id;
+
   try {
-    const userId = req.user?._id;
     if (!isValidObjectId(userId))
       throw new ApiError(400, "Invalid subscriber ID");
 

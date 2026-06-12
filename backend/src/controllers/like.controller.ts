@@ -5,12 +5,12 @@ import { ApiResponse } from "../utils/apiResponse.js";
 import { User } from "../models/user.model.js";
 
 const toggleVideoLike = async (req: any, res: any) => {
-  const { videoId } = req.params;
   //toggle like on a video
-
-  if (!isValidObjectId(videoId)) throw new ApiError(400, "Invalid Video ID");
+  const { videoId } = req.params;
+  const userId = req.user?._id;
 
   try {
+    if (!isValidObjectId(videoId)) throw new ApiError(400, "Invalid Video ID");
     const likedVideo = await Like.findOne({
       video: videoId,
     });
@@ -27,7 +27,7 @@ const toggleVideoLike = async (req: any, res: any) => {
       // like video
       await Like.create({
         video: videoId,
-        likedBy: req.user?._id,
+        likedBy: userId,
       });
 
       return res.status(201).json(
@@ -45,13 +45,14 @@ const toggleVideoLike = async (req: any, res: any) => {
 };
 
 const toggleCommentLike = async (req: any, res: any) => {
-  const { commentId } = req.params;
   //toggle like on a comment
-
-  if (!isValidObjectId(commentId))
-    throw new ApiError(400, "Invalid Comment ID");
+  const { commentId } = req.params;
+  const userId = req.user?._id;
 
   try {
+    if (!isValidObjectId(commentId))
+      throw new ApiError(400, "Invalid Comment ID");
+
     const likedComment = await Like.findOne({
       comment: commentId,
     });
@@ -68,7 +69,7 @@ const toggleCommentLike = async (req: any, res: any) => {
       // like comment
       await Like.create({
         comment: commentId,
-        likedBy: req.user?._id,
+        likedBy: userId,
       });
 
       return res.status(201).json(
@@ -86,12 +87,12 @@ const toggleCommentLike = async (req: any, res: any) => {
 };
 
 const toggleTweetLike = async (req: any, res: any) => {
-  const { tweetId } = req.params;
   //toggle like on a tweet
-
-  if (!isValidObjectId(tweetId)) throw new ApiError(400, "Invalid Tweet ID");
+  const { tweetId } = req.params;
+  const userId = req.user?._id;
 
   try {
+    if (!isValidObjectId(tweetId)) throw new ApiError(400, "Invalid Tweet ID");
     const likedTweet = await Like.findOne({
       tweet: tweetId,
     });
@@ -108,7 +109,7 @@ const toggleTweetLike = async (req: any, res: any) => {
       // like tweet
       await Like.create({
         tweet: tweetId,
-        likedBy: req.user?._id,
+        likedBy: userId,
       });
 
       return res.status(201).json(

@@ -6,12 +6,14 @@ import { Video } from "../models/video.model.js";
 
 const getChannelStats = async (req: any, res: any) => {
   //getting total subs, total videos, total likes, total tweets, total views
-  if (!isValidObjectId(req.user?._id))
-    throw new ApiError(400, "Invalid User ID");
+  const userId = req.user?._id;
+
   try {
+    if (!isValidObjectId(userId)) throw new ApiError(400, "Invalid User ID");
+
     const stats = await User.aggregate([
       {
-        $match: { _id: new mongoose.Types.ObjectId(req.user?._id) },
+        $match: { _id: new mongoose.Types.ObjectId(userId) },
       },
       {
         $lookup: {
@@ -110,8 +112,10 @@ const getChannelVideos = async (req: any, res: any) => {
     sortType = "desc",
   } = req.query;
 
+  const userId = req.user?._id;
+
   try {
-    if (!isValidObjectId(req.user?._id)) {
+    if (!isValidObjectId(userId)) {
       throw new ApiError(400, "Invalid User ID");
     }
 
@@ -139,7 +143,7 @@ const getChannelVideos = async (req: any, res: any) => {
     const aggregate = Video.aggregate([
       {
         $match: {
-          owner: new mongoose.Types.ObjectId(req.user?._id),
+          owner: new mongoose.Types.ObjectId(userId),
           ...(query &&
             query.trim() !== "" && {
               $or: [{ title: { $regex: query.trim(), $options: "i" } }],

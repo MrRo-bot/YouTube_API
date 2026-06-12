@@ -45,13 +45,12 @@ const generateAccessTokenAndRefreshToken = async (userId: ObjectId) => {
 const registerUser = async (req: any, res: any) => {
   const { fullName, email, username, password } = req.body;
 
-  if (
-    [fullName, email, username, password].some((field) => field.trim() === "")
-  ) {
-    throw new ApiError(409, "All necessary fields are required");
-  }
-
   try {
+    if (
+      [fullName, email, username, password].some((field) => field.trim() === "")
+    ) {
+      throw new ApiError(409, "All necessary fields are required");
+    }
     const existingUser = await User.findOne({
       $or: [{ username }, { email }],
     });
@@ -123,11 +122,10 @@ const registerUser = async (req: any, res: any) => {
 const loginUser = async (req: any, res: any) => {
   const { username, email, password } = req.body;
 
-  if (!(username || email)) {
-    throw new ApiError(400, "Username or Email is required");
-  }
-
   try {
+    if (!(username || email)) {
+      throw new ApiError(400, "Username or Email is required");
+    }
     const user = await User.findOne({
       $or: [{ username }, { email }],
     });
@@ -220,11 +218,10 @@ const refreshAccessToken = async (req: any, res: any) => {
   const incomingRefreshToken =
     req.cookies?.refreshToken || req.body?.refreshToken;
 
-  if (!incomingRefreshToken) {
-    throw new ApiError(401, "Unauthorized request");
-  }
-
   try {
+    if (!incomingRefreshToken) {
+      throw new ApiError(401, "Unauthorized request");
+    }
     const decodedToken: any | JwtPayload = jwt.verify(
       incomingRefreshToken,
       config.refresh_token
@@ -269,16 +266,16 @@ const refreshAccessToken = async (req: any, res: any) => {
 
 const resetPassword = async (req: any, res: any) => {
   const { oldPassword, newPassword } = req?.body;
-
-  if (!oldPassword || !newPassword) {
-    throw new ApiError(
-      401,
-      `Please provide ${!oldPassword ? "Old password" : "New password"} to continue`
-    );
-  }
+  const userId = req.user?._id;
 
   try {
-    const user = await User.findById(req.user?._id);
+    if (!oldPassword || !newPassword) {
+      throw new ApiError(
+        401,
+        `Please provide ${!oldPassword ? "Old password" : "New password"} to continue`
+      );
+    }
+    const user = await User.findById(userId);
 
     const isPasswordValid = await user.isPasswordValid(oldPassword);
     if (!isPasswordValid) {
@@ -331,17 +328,18 @@ const getCurrentUser = async (req: any, res: any) => {
 
 const updateProfileDetails = async (req: any, res: any) => {
   const { fullName, email } = req.body;
-
-  const updates: { fullName?: string; email?: string } = {};
-
-  if (fullName) updates.fullName = fullName;
-  if (email) updates.email = email;
-
-  if (Object.keys(updates).length < 1)
-    throw new ApiError(400, "Please provide valid field data to update");
+  const userId = req.user?._id;
 
   try {
-    const user = await User.findById(req.user?._id);
+    const updates: { fullName?: string; email?: string } = {};
+
+    if (fullName) updates.fullName = fullName;
+    if (email) updates.email = email;
+
+    if (Object.keys(updates).length < 1)
+      throw new ApiError(400, "Please provide valid field data to update");
+
+    const user = await User.findById(userId);
     if (!user) throw new ApiError(401, "Unauthorized update");
 
     const updatedUser = await User.findByIdAndUpdate(
@@ -383,10 +381,11 @@ const updateProfileDetails = async (req: any, res: any) => {
 
 const updateAvatar = async (req: any, res: any) => {
   const avatar = req.file;
-
-  if (!avatar) throw new ApiError(400, "Please provide an Avatar image");
+  const userId = req.user?._id;
 
   try {
+    if (!avatar) throw new ApiError(400, "Please provide an Avatar image");
+
     let avatarLocalPath = req.file.path;
 
     const avatarResponse = await uploadOnCloudinary(avatarLocalPath);
@@ -397,7 +396,7 @@ const updateAvatar = async (req: any, res: any) => {
       );
     }
 
-    const user = await User.findById(req.user?._id);
+    const user = await User.findById(userId);
     if (!user) throw new ApiError(401, "Unauthorized update");
 
     if (user.avatar) {
@@ -452,10 +451,11 @@ const updateAvatar = async (req: any, res: any) => {
 
 const updateCover = async (req: any, res: any) => {
   const coverImage = req.file;
-
-  if (!coverImage) throw new ApiError(400, "Please provide a Cover image");
+  const userId = req.user?._id;
 
   try {
+    if (!coverImage) throw new ApiError(400, "Please provide a Cover image");
+
     let coverImageLocalPath = req.file.path;
 
     const coverImageResponse = await uploadOnCloudinary(coverImageLocalPath);
@@ -463,7 +463,7 @@ const updateCover = async (req: any, res: any) => {
       throw new ApiError(400, "Please provide a valid link for Cover image");
     }
 
-    const user = await User.findById(req.user?._id);
+    const user = await User.findById(userId);
     if (!user) throw new ApiError(401, "Unauthorized update");
 
     if (user.coverImage) {
@@ -519,10 +519,10 @@ const updateCover = async (req: any, res: any) => {
 
 const getChannelProfile = async (req: any, res: any) => {
   const { username } = req.params;
-
-  if (!username?.trim()) throw new ApiError(400, "Username is missing");
+  const userId = req.user?._id;
 
   try {
+    if (!username?.trim()) throw new ApiError(400, "Username is missing");
     const channel = await User.aggregate([
       //finding user with username
       {
@@ -562,7 +562,7 @@ const getChannelProfile = async (req: any, res: any) => {
           //finding subscribed or not
           isSubscribed: {
             $cond: {
-              if: { $in: [req.user?._id, "$subscribers.subscriber"] },
+              if: { $in: [userId, "$subscribers.subscriber"] },
               then: true,
               else: false,
             },
@@ -614,10 +614,12 @@ const getChannelProfile = async (req: any, res: any) => {
  */
 
 const getWatchHistory = async (req: any, res: any) => {
+  const userId = req.user?._id;
+
   try {
     const user = await User.aggregate([
       {
-        $match: { _id: new Types.ObjectId(req.user?._id) },
+        $match: { _id: new Types.ObjectId(userId) },
       },
       {
         $lookup: {
@@ -685,16 +687,16 @@ const getWatchHistory = async (req: any, res: any) => {
 const addToWatchHistory = async (req: any, res: any) => {
   //adding videos to watch later of current user if video is watched
   const { videoId } = req.params;
+  const userId = req.user?._id;
 
   try {
     if (!isValidObjectId(videoId))
       throw new ApiError(404, "Video ID not found");
 
-    if (!isValidObjectId(req?.user?._id))
-      throw new ApiError(404, "User not found");
+    if (!isValidObjectId(userId)) throw new ApiError(404, "User not found");
 
     const updatedWatchHistory = await User.updateOne(
-      { _id: new mongoose.Types.ObjectId(req?.user?._id) },
+      { _id: new mongoose.Types.ObjectId(userId) },
       { $addToSet: { watchHistory: videoId } },
       {
         runValidators: true,

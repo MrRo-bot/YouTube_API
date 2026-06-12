@@ -11,6 +11,7 @@ import {
 const publishAVideo = async (req: any, res: any) => {
   //getting video meta, uploading to cloudinary, creating new video object
   const { title, description } = req.body;
+  const userId = req.user?._id;
   const thumbnailLocalPath = req.files?.thumbnail?.[0]?.path;
   const videoFileLocalPath = req.files?.videoFile?.[0]?.path;
 
@@ -41,7 +42,7 @@ const publishAVideo = async (req: any, res: any) => {
 
     updates.views = 0;
     updates.isPublished = true;
-    updates.owner = req.user?._id;
+    updates.owner = userId;
 
     const newVideo = await Video.create(updates);
 
