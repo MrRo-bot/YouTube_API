@@ -1,7 +1,7 @@
 import { Router } from "express";
 import {
   deleteVideo,
-  getAllVideos,
+  // getAllVideos,
   getVideoById,
   publishAVideo,
   togglePublishStatus,
@@ -15,7 +15,7 @@ router.use(verifyJWT); // Apply verifyJWT middleware to all routes in this file
 
 router
   .route("/")
-  .get(getAllVideos)
+  // .get(getAllVideos)
   .post(
     upload.fields([
       {

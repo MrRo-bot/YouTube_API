@@ -8,101 +8,6 @@ import {
   uploadOnCloudinary,
 } from "../utils/cloudinary.js";
 
-const getAllVideos = async (req: any, res: any) => {
-  //getting all videos with pagination using queries below
-  const {
-    page = 1,
-    limit = 10,
-    query,
-    sortBy = "createdAt",
-    sortType = "desc",
-  } = req.query;
-
-  try {
-    if (!isValidObjectId(req.user?._id)) {
-      throw new ApiError(400, "Invalid User ID");
-    }
-
-    const sort: { [key: string]: number } = {};
-    const validSortFields = [
-      "createdAt",
-      "title",
-      "views",
-      "duration",
-      "updatedAt",
-    ];
-
-    if (validSortFields.includes(sortBy)) {
-      sort[sortBy] = sortType === "asc" ? 1 : -1;
-    } else {
-      sort["createdAt"] = -1;
-    }
-
-    const options = {
-      page: parseInt(page, 10),
-      limit: parseInt(limit, 10),
-      sort: sort,
-    };
-
-    const aggregate = Video.aggregate([
-      {
-        $match: {
-          owner: new mongoose.Types.ObjectId(req.user?._id),
-          ...(query &&
-            query.trim() !== "" && {
-              $or: [{ title: { $regex: query.trim(), $options: "i" } }],
-            }),
-        },
-      },
-      {
-        $lookup: {
-          from: "videos",
-          localField: "_id",
-          foreignField: "owner",
-          as: "videos",
-        },
-      },
-      {
-        $project: {
-          owner: 1,
-          title: 1,
-          description: 1,
-          thumbnail: 1,
-          videoFile: 1,
-          duration: 1,
-          views: 1,
-          createdAt: 1,
-          updatedAt: 1,
-        },
-      },
-    ]);
-
-    const result = await Video.aggregatePaginate(aggregate, options);
-
-    res.status(200).json(
-      new ApiResponse(200, true, "Paginated Videos", {
-        data: result.docs,
-        pagination: {
-          totalVideos: result.totalDocs,
-          limit: result.limit,
-          page: result.page,
-          totalPages: result.totalPages,
-          hasNextPage: result.hasNextPage,
-          hasPrevPage: result.hasPrevPage,
-          nextPage: result.nextPage,
-          prevPage: result.prevPage,
-        },
-        filters: { query, sortBy, sortType },
-      })
-    );
-  } catch (error: any | { statusCode?: number; message?: string }) {
-    throw new ApiError(
-      error.statusCode || 500,
-      error.message || "Something went wrong while getting Videos"
-    );
-  }
-};
-
 const publishAVideo = async (req: any, res: any) => {
   //getting video meta, uploading to cloudinary, creating new video object
   const { title, description } = req.body;
@@ -293,7 +198,7 @@ const togglePublishStatus = async (req: any, res: any) => {
 };
 
 export {
-  getAllVideos,
+  // getAllVideos,
   publishAVideo,
   getVideoById,
   updateVideo,

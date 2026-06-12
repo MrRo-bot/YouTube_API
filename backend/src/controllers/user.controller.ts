@@ -577,6 +577,8 @@ const getChannelProfile = async (req: any, res: any) => {
           avatar: 1,
           coverImage: 1,
           subscribers: 1,
+          subscribersCount: 1,
+          channelSubscribedTo: 1,
           subscribedTo: 1,
           email: 1,
           createdAt: 1,

@@ -2,10 +2,11 @@ import mongoose, { isValidObjectId } from "mongoose";
 import { User } from "../models/user.model.js";
 import { ApiError } from "../utils/apiError.js";
 import { ApiResponse } from "../utils/apiResponse.js";
+import { Video } from "../models/video.model.js";
 
 const getChannelStats = async (req: any, res: any) => {
-  //TODO: VERIFY total subs, total videos, total likes, total views
-  if (isValidObjectId(req.user?._id))
+  //getting total subs, total videos, total likes, total tweets, total views
+  if (!isValidObjectId(req.user?._id))
     throw new ApiError(400, "Invalid User ID");
   try {
     const stats = await User.aggregate([
@@ -37,6 +38,14 @@ const getChannelStats = async (req: any, res: any) => {
         },
       },
       {
+        $lookup: {
+          from: "tweets",
+          localField: "_id",
+          foreignField: "owner",
+          as: "tweets",
+        },
+      },
+      {
         $addFields: {
           subscribersCount: {
             $size: "$subscribers",
@@ -47,6 +56,9 @@ const getChannelStats = async (req: any, res: any) => {
           likesCount: {
             $size: "$likes",
           },
+          tweetsCount: {
+            $size: "$tweets",
+          },
         },
       },
       {
@@ -56,8 +68,13 @@ const getChannelStats = async (req: any, res: any) => {
           avatar: 1,
           coverImage: 1,
           subscribers: 1,
+          subscribersCount: 1,
           videos: 1,
+          videosCount: 1,
           likes: 1,
+          likesCount: 1,
+          tweets: 1,
+          tweetsCount: 1,
           createdAt: 1,
         },
       },
@@ -84,13 +101,50 @@ const getChannelStats = async (req: any, res: any) => {
 };
 
 const getChannelVideos = async (req: any, res: any) => {
-  //TODO: VERIFY Get all the videos uploaded by the channel
-  if (isValidObjectId(req.user?._id))
-    throw new ApiError(400, "Invalid User ID");
+  //getting all videos with pagination using queries below
+  const {
+    page = 1,
+    limit = 10,
+    query,
+    sortBy = "createdAt",
+    sortType = "desc",
+  } = req.query;
+
   try {
-    const videos = await User.aggregate([
+    if (!isValidObjectId(req.user?._id)) {
+      throw new ApiError(400, "Invalid User ID");
+    }
+
+    const sort: { [key: string]: number } = {};
+    const validSortFields = [
+      "createdAt",
+      "title",
+      "views",
+      "duration",
+      "updatedAt",
+    ];
+
+    if (validSortFields.includes(sortBy)) {
+      sort[sortBy] = sortType === "asc" ? 1 : -1;
+    } else {
+      sort["createdAt"] = -1;
+    }
+
+    const options = {
+      page: parseInt(page, 10),
+      limit: parseInt(limit, 10),
+      sort: sort,
+    };
+
+    const aggregate = Video.aggregate([
       {
-        $match: { _id: new mongoose.Types.ObjectId(req.user?._id) },
+        $match: {
+          owner: new mongoose.Types.ObjectId(req.user?._id),
+          ...(query &&
+            query.trim() !== "" && {
+              $or: [{ title: { $regex: query.trim(), $options: "i" } }],
+            }),
+        },
       },
       {
         $lookup: {
@@ -101,37 +155,42 @@ const getChannelVideos = async (req: any, res: any) => {
         },
       },
       {
-        $addFields: {
-          videosCount: {
-            $size: "$videos",
-          },
-        },
-      },
-      {
         $project: {
-          username: 1,
-          videos: 1,
-          videosCount: 1,
+          owner: 1,
+          title: 1,
+          description: 1,
+          thumbnail: 1,
+          videoFile: 1,
+          duration: 1,
+          views: 1,
+          createdAt: 1,
+          updatedAt: 1,
         },
       },
     ]);
 
-    if (!videos) throw new ApiError(404, "Videos list not found");
+    const result = await Video.aggregatePaginate(aggregate, options);
 
-    return res
-      .status(200)
-      .json(
-        new ApiResponse(
-          200,
-          true,
-          "Videos list fetched successfully",
-          videos[0]
-        )
-      );
+    res.status(200).json(
+      new ApiResponse(200, true, "Paginated Videos", {
+        data: result.docs,
+        pagination: {
+          totalVideos: result.totalDocs,
+          limit: result.limit,
+          page: result.page,
+          totalPages: result.totalPages,
+          hasNextPage: result.hasNextPage,
+          hasPrevPage: result.hasPrevPage,
+          nextPage: result.nextPage,
+          prevPage: result.prevPage,
+        },
+        filters: { query, sortBy, sortType },
+      })
+    );
   } catch (error: any | { statusCode?: number; message?: string }) {
     throw new ApiError(
       error.statusCode || 500,
-      error.message || "Something went wrong while getting Videos list"
+      error.message || "Something went wrong while getting Videos"
     );
   }
 };
