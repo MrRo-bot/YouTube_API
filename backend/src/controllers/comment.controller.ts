@@ -38,6 +38,7 @@ const getVideoComments = async (req: any, res: any) => {
           video: 1,
           content: 1,
           createdAt: 1,
+          updatedAt: 1,
         },
       },
     ]);

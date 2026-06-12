@@ -33,16 +33,14 @@ const createTweet = async (req: any, res: any) => {
 
 const getUserTweets = async (req: any, res: any) => {
   //getting user tweets
-  const { userId } = req.params;
 
   try {
-    const user = await User.findById(userId);
-    if (!isValidObjectId(userId) || !user)
-      throw new ApiError(404, "User ID not found");
+    const user = await User.findById(req.user?._id);
+    if (!user) throw new ApiError(404, "User ID not found");
 
     const userTweets = await User.aggregate([
       {
-        $match: { _id: new mongoose.Types.ObjectId(userId) },
+        $match: { _id: new mongoose.Types.ObjectId(req.user?._id) },
       },
       {
         $lookup: {

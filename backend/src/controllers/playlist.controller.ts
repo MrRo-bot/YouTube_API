@@ -33,32 +33,70 @@ const createPlaylist = async (req: any, res: any) => {
 };
 
 const getUserPlaylists = async (req: any, res: any) => {
-  const { userId } = req.params;
   //getting users playlists
 
   try {
-    const user = await User.findById(userId);
-    if (!isValidObjectId(userId) || !user)
-      throw new ApiError(404, "User ID not found");
+    if (!req.user?._id) throw new ApiError(404, "User ID not found");
 
     const userPlaylist = await User.aggregate([
-      {
-        $match: { _id: new mongoose.Types.ObjectId(userId) },
-      },
+      { $match: { _id: new mongoose.Types.ObjectId(req.user?._id) } },
       {
         $lookup: {
           from: "playlists",
-          localField: "_id",
-          foreignField: "owner",
+          let: { userId: "$_id" },
+          pipeline: [
+            { $match: { $expr: { $eq: ["$owner", "$$userId"] } } },
+            // lookup video docs for the playlist's videos array
+            {
+              $lookup: {
+                from: "videos",
+                let: { videoIds: "$videos" },
+                pipeline: [
+                  { $match: { $expr: { $in: ["$_id", "$$videoIds"] } } },
+                  {
+                    $project: {
+                      title: 1,
+                      description: 1,
+                      videoFile: 1,
+                      thumbnail: 1,
+                      duration: 1,
+                      views: 1,
+                      isPublished: 1,
+                      updatedAt: 1,
+                      createdAt: 1,
+                    },
+                  },
+                ],
+                as: "videoDocs",
+              },
+            },
+            // reordering videoDocs to match the original videos array and to preserve duplicates
+            {
+              $addFields: {
+                videos: {
+                  $map: {
+                    input: "$videos",
+                    as: "vid",
+                    in: {
+                      $first: {
+                        $filter: {
+                          input: "$videoDocs",
+                          cond: { $eq: ["$$this._id", "$$vid"] },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+            // remove the temporary videoDocs field
+            { $project: { videoDocs: 0 } },
+          ],
           as: "userPlaylists",
         },
       },
       {
-        $addFields: {
-          playlistCount: {
-            $size: "$userPlaylists",
-          },
-        },
+        $addFields: { playlistCount: { $size: "$userPlaylists" } },
       },
       {
         $project: {

@@ -16,12 +16,11 @@ const getAllVideos = async (req: any, res: any) => {
     query,
     sortBy = "createdAt",
     sortType = "desc",
-    userId,
   } = req.query;
 
   try {
-    if (!isValidObjectId(userId)) {
-      throw new ApiError(400, "Valid userId is required");
+    if (!isValidObjectId(req.user?._id)) {
+      throw new ApiError(400, "Invalid User ID");
     }
 
     const sort: { [key: string]: number } = {};
@@ -48,7 +47,7 @@ const getAllVideos = async (req: any, res: any) => {
     const aggregate = Video.aggregate([
       {
         $match: {
-          owner: new mongoose.Types.ObjectId(userId),
+          owner: new mongoose.Types.ObjectId(req.user?._id),
           ...(query &&
             query.trim() !== "" && {
               $or: [{ title: { $regex: query.trim(), $options: "i" } }],
@@ -73,6 +72,7 @@ const getAllVideos = async (req: any, res: any) => {
           duration: 1,
           views: 1,
           createdAt: 1,
+          updatedAt: 1,
         },
       },
     ]);

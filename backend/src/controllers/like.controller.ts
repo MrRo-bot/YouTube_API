@@ -136,20 +136,30 @@ const getLikedVideos = async (req: any, res: any) => {
 
     const likedVideos = await Like.aggregate([
       {
-        $match: { likedBy: new mongoose.Types.ObjectId(userId) },
+        $match: {
+          likedBy: new mongoose.Types.ObjectId(userId),
+          video: { $exists: true, $ne: null }, // Only video likes
+        },
       },
       {
         $lookup: {
-          from: "likes",
-          localField: "_id",
-          foreignField: "video",
-          as: "likedVideos",
+          from: "videos",
+          localField: "video",
+          foreignField: "_id",
+          as: "videoDetails",
+        },
+      },
+      {
+        $unwind: {
+          path: "$videoDetails",
+          preserveNullAndEmptyArrays: false, // Remove likes that dont have video property
         },
       },
       {
         $project: {
-          video: 1,
           likedBy: 1,
+          video: "$videoDetails",
+          likedAt: "$createdAt",
         },
       },
     ]);
