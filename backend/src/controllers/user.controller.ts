@@ -681,7 +681,7 @@ const getWatchHistory = async (req: any, res: any) => {
 };
 
 const addToWatchHistory = async (req: any, res: any) => {
-  //TODO: VERIFY THAT IF IT WORKS OR NOT
+  //adding videos to watch later of current user if video is watched
   const { videoId } = req.params;
 
   try {

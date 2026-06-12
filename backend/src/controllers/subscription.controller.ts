@@ -2,17 +2,20 @@ import { User } from "../models/user.model.js";
 import { Subscription } from "../models/subscription.model.js";
 import { ApiError } from "../utils/apiError.js";
 import { ApiResponse } from "../utils/apiResponse.js";
-import { isValidObjectId, Types } from "mongoose";
+import mongoose, { isValidObjectId, Types } from "mongoose";
 
-//TODO: VERIFY toggle subscription
 const toggleSubscription = async (req: any, res: any) => {
+  //toggle subscription
   const { channelId } = req.params;
   const userId = req.user?._id;
 
-  if (!channelId) throw new ApiError(400, "Provide Channel ID");
-
   try {
-    //TODO: VERIFY create sub object or remove sub object
+    if (!isValidObjectId(channelId))
+      throw new ApiError(400, "Provide valid channel ID");
+
+    if (req.user?._id.equals(channelId))
+      throw new ApiError(400, "Channel and User ID is same");
+
     const existingSub = await Subscription.findOne({
       subscriber: userId,
       channel: channelId,
@@ -47,15 +50,14 @@ const toggleSubscription = async (req: any, res: any) => {
   }
 };
 
-//TODO: VERIFY controller to return subscriber list of a channel
 const getUserChannelSubscribers = async (req: any, res: any) => {
-  const { channelId } = req.params;
-
-  if (!channelId) throw new ApiError(400, "Invalid Channel ID");
-
+  //getting subscribers list of current channel
   try {
+    const userId = req.user?._id;
+    if (!isValidObjectId(userId)) throw new ApiError(400, "Invalid user ID");
+
     const subscribers = await User.aggregate([
-      { $match: { _id: new Types.ObjectId(channelId) } },
+      { $match: { _id: new Types.ObjectId(userId) } },
       {
         $lookup: {
           from: "subscriptions",
@@ -66,8 +68,11 @@ const getUserChannelSubscribers = async (req: any, res: any) => {
       },
       {
         $project: {
+          fullName: 1,
           username: 1,
+          avatar: 1,
           subscribers: 1,
+          //todo: verify getting channel info from subs if needed
         },
       },
     ]);
@@ -93,16 +98,15 @@ const getUserChannelSubscribers = async (req: any, res: any) => {
   }
 };
 
-//TODO: VERIFY controller to return channel list to which user has subscribed
 const getSubscribedChannels = async (req: any, res: any) => {
-  const { subscriberId } = req.params;
-
-  if (!isValidObjectId(subscriberId))
-    throw new ApiError(400, "Invalid subscriber ID");
-
+  //getting channel list to which current user has subscribed to
   try {
+    const userId = req.user?._id;
+    if (!isValidObjectId(userId))
+      throw new ApiError(400, "Invalid subscriber ID");
+
     const subscriptions = await User.aggregate([
-      { $match: { _id: new Types.ObjectId(subscriberId) } },
+      { $match: { _id: new Types.ObjectId(userId) } },
       {
         $lookup: {
           from: "subscriptions",
@@ -113,8 +117,11 @@ const getSubscribedChannels = async (req: any, res: any) => {
       },
       {
         $project: {
+          fullName: 1,
           username: 1,
           subscriptions: 1,
+          avatar: 1,
+          //todo: verify subscribers and videos count calculation
         },
       },
     ]);
