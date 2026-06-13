@@ -3,6 +3,7 @@ import { User } from "../models/user.model.js";
 import { ApiError } from "../utils/apiError.js";
 import { ApiResponse } from "../utils/apiResponse.js";
 import { Video } from "../models/video.model.js";
+import { validSortFields, videoLimit, videoPage } from "../constants.js";
 
 const getChannelStats = async (req: any, res: any) => {
   //getting total subs, total videos, total likes, total tweets, total views
@@ -105,8 +106,8 @@ const getChannelStats = async (req: any, res: any) => {
 const getChannelVideos = async (req: any, res: any) => {
   //getting all videos with pagination using queries below
   const {
-    page = 1,
-    limit = 10,
+    page = videoPage,
+    limit = videoLimit,
     query,
     sortBy = "createdAt",
     sortType = "desc",
@@ -120,13 +121,6 @@ const getChannelVideos = async (req: any, res: any) => {
     }
 
     const sort: { [key: string]: number } = {};
-    const validSortFields = [
-      "createdAt",
-      "title",
-      "views",
-      "duration",
-      "updatedAt",
-    ];
 
     if (validSortFields.includes(sortBy)) {
       sort[sortBy] = sortType === "asc" ? 1 : -1;

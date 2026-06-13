@@ -1,4 +1,9 @@
 import multer from "multer";
+import {
+  multerFileSizeLimit,
+  multerTempLocation,
+  uniqueSuffix,
+} from "../constants.js";
 
 const storage = multer.diskStorage({
   //choosing destination to save files in backend server temporarily
@@ -7,7 +12,7 @@ const storage = multer.diskStorage({
     file: Express.Multer.File,
     cb: (error: Error | null, destination: string) => void
   ) {
-    cb(null, "./public/temp");
+    cb(null, multerTempLocation);
   },
   //creating file name with unique string at the end which is common practice
   filename: function (
@@ -15,10 +20,6 @@ const storage = multer.diskStorage({
     file: Express.Multer.File,
     cb: (error: Error | null, filename: string) => void
   ) {
-    const uniqueSuffix =
-      new Date(Date.now()).toJSON().slice(0, 10).split("-").join("") +
-      "-" +
-      Math.round(Math.random() * 1e9);
     cb(
       null,
       file.originalname.split(".").slice(0, -1).join(".") +
@@ -32,5 +33,5 @@ const storage = multer.diskStorage({
 
 export const upload = multer({
   storage,
-  limits: { fileSize: 100 * 1024 * 1024 },
+  limits: { fileSize: multerFileSizeLimit },
 });

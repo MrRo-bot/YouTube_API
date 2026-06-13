@@ -2,11 +2,12 @@ import mongoose, { isValidObjectId } from "mongoose";
 import { Comment } from "../models/comment.model.js";
 import { ApiError } from "../utils/apiError.js";
 import { ApiResponse } from "../utils/apiResponse.js";
+import { commentLimit, commentPage } from "../constants.js";
 
 const getVideoComments = async (req: any, res: any) => {
   //getting all comments of a video
   const { videoId } = req.params;
-  const { page = 1, limit = 10 } = req.query;
+  const { page = commentPage, limit = commentLimit } = req.query;
 
   try {
     if (!isValidObjectId(videoId)) {
