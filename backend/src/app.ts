@@ -6,8 +6,13 @@ import config from "./config/config.js";
 
 const app = express();
 
+//json format manager middleware
+app.use(express.json());
+
+//rate limiter middleware
 app.use(limiter);
 
+//cors middleware
 app.use(
   cors({
     origin: config.cors_origin,
@@ -15,14 +20,17 @@ app.use(
   })
 );
 
+//cookies parsing middleware
 app.use(cookieParser());
 
+//json payload limit middleware
 app.use(
   express.json({
     limit: "16kb",
   })
 );
 
+//urlencoding middleware for form data i think
 app.use(
   express.urlencoded({
     extended: true,
@@ -30,6 +38,7 @@ app.use(
   })
 );
 
+//static file serving middleware
 app.use(express.static("public"));
 
 //order of defining things is important in backend

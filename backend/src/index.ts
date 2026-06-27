@@ -11,5 +11,4 @@ try {
   console.log("MongoDB Connection Error!!!", error.message);
 }
 
-app.use(express.json());
 app.get("/", (_, res) => res.send("API Running..."));
