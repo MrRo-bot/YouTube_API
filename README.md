@@ -53,7 +53,7 @@ README.md
 - **Auth**: JWT (Access Tokens)
 - **Environment**: ES Modules (`type: "module"`)
 - **Others**:  
-  `mongoose-aggregate-paginate-v2`, `dotenv`, custom error handling, custom API response handling `multer`, and `cloudinary`
+  `mongoose-aggregate-paginate-v2`, `dotenv`, `cookie-parser`, `cors`, `express-rate-limit`, `dotenv`, custom error handling, custom API response handling `multer`, and `cloudinary`
 
 ---
 
